@@ -3,13 +3,13 @@
 from importlib import import_module
 from time import sleep
 from sys import exit, executable
-import subprocess
 from re import match
 from random import randint
 from datetime import datetime
 from json import load, dump
 from platform import system
 from os import path
+import subprocess
 # List of required non-standard packages
 required_packages = ["pyfiglet", "termcolor"]
 def ensure_pip_installed():
