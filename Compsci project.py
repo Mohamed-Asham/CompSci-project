@@ -130,20 +130,36 @@ def load_accounts():
     try:
         with open(DATA_FILE, "r") as file:
             data = load(file)
-            return data
+
+        for role, accounts in data.items():
+            for email, details in accounts.items():
+                if isinstance(details, str):
+                    data[role][email] = {
+                        "email": email,
+                        "password": details,
+                        "name": "Unknown",
+                        "surname": "Unknown",
+                        "date_of_birth": "Unknown",
+                        "gender": "Unknown",
+                        "NHS_blood_donor": "Unknown",
+                        "NHS_organ_donor": "Unknown",
+                        "Address_Line_1": "Unknown",
+                        "Address_Line_2": "Unknown" }
+        return data
     except FileNotFoundError:
-        # Return default accounts if the file doesn't exist
         return {
-            "patient": {"patient1@gmail.com": "password1"},
-            "gp": {"gp1@gmail.com": "password1"},
-            "admin": {"admin1@gmail.com": "password1"}
+            "patient": {},
+            "gp": {},
+            "admin": {}
         }
-    except Exception:
+    except Exception as e:
+        print(f"Error loading accounts: {e}")
         return {
-            "patient": {"patient1@gmail.com": "password1"},
-            "gp": {"gp1@gmail.com": "password1"},
-            "admin": {"admin1@gmail.com": "password1"}
+            "patient": {},
+            "gp": {},
+            "admin": {}
         }
+
 def save_accounts(new_account=None):
     with open(DATA_FILE, "w") as file:
         dump(new_account, file, indent=4)
@@ -153,8 +169,8 @@ registered_users = load_accounts()
 
 #======================Admin Homepage======================
 def display_all_accounts():
-    print("=" * 45)
-    print("ALL ACCOUNTS".center(45))
+    print("=" * 80)
+    print("ALL ACCOUNTS".center(80))
     print("\nEnter 'H' to return to the homepage")
 
     if not registered_users:
@@ -166,15 +182,17 @@ def display_all_accounts():
 
     for role, accounts in registered_users.items():
         print(f"\nRole: {role.capitalize()}")
-        print("-" * 45)
+        print("-" * 80)
         if accounts:
-            for email, password in accounts.items():
-                print(f"[ {counter} ] Email: {email}, Password: {password}")
+            for email, details in accounts.items():
+                print(f"[ {counter} ] Email: {email}, Name: {details['name']}, "
+                      f"Surname: {details['surname']}, Gender: {details['gender']}, "
+                      f"Password: {details['password']}")
                 account_mapping[counter] = (role, email)  # Map the number to role and email
                 counter += 1
         else:
             print("No accounts in this role.")
-    print(f"\n{"=" * 45}")
+    print(f"\n{"=" * 80}")
 
     return account_mapping
 def delete_accounts():
@@ -231,10 +249,10 @@ def delete_accounts():
 
 #====================Homepage Accounts=====================
 def patients_page():
-    print("=" * 45)
-    print("PATIENT HOMEPAGE".center(45))
-    print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(45), "green"))
-    print("-" * 45)
+    print("=" * 80)
+    print("PATIENT HOMEPAGE".center(80))
+    print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80), "green"))
+    print("-" * 80)
     print("[ 1 ] Book and manage appointments")
     print("[ 2 ] Change default GP ")
     print("[ 3 ] Change account details")
@@ -256,9 +274,9 @@ def patients_page():
         else:
             print("Please choose a valid option '1' , '2', '3', or 'X'")
 def gp_page():
-    print("=" * 45)
-    print("GP HOMEPAGE".center(45))
-    print(termcolor.colored("Welcome, GP. Your dedication helps patients achieve their best mental health.".center(45), "green"))
+    print("=" * 80)
+    print("GP HOMEPAGE".center(80))
+    print(termcolor.colored("Welcome, GP. Your dedication helps patients achieve their best mental health.".center(80), "green"))
     print("[ 1 ] View schedule")
     print("[ 2 ] Manage appointments ")
     print("[ 3 ] Manage patient records")
@@ -288,10 +306,10 @@ def gp_page():
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
 def admins_page():
-    print("=" * 45)
-    print("ADMIN HOMEPAGE".center(45))
-    print(termcolor.colored("Welcome, Admin. Managing the platform for better mental health!".center(45), "green"))
-    print("-" * 45)
+    print("=" * 80)
+    print("ADMIN HOMEPAGE".center(80))
+    print(termcolor.colored("Welcome, Admin. Managing the platform for better mental health!".center(80), "green"))
+    print("-" * 80)
     print("[ 1 ] Add new doctor")
     print("[ 2 ] Activate/Deactivate or Delete accounts ")
     print("[ 3 ] Confirm/Un-confirm patient registration ")
@@ -328,7 +346,7 @@ def verify_credentials(email, v_password, role):
         return "Invalid role"
     role_accounts = registered_users[role]
     if email in role_accounts:
-        if role_accounts[email] == v_password:
+        if role_accounts[email]["password"] == v_password:
             return True
         else:
             return "Incorrect password"
@@ -340,8 +358,8 @@ def checking_email(email):
             return "Email already registered"
     return "Email available"
 def registering_user():
-    print("=" * 45)
-    print("REGISTERING".center(45))
+    print("=" * 80)
+    print("REGISTERING".center(80))
     print("Please enter your details \n\nEnter 'M' to return to main menu\n")
     first_name = input("First name: ")
     if first_name.upper() == "M":
@@ -512,7 +530,7 @@ def registering_user():
             ad1 = input("Address Line 1 (House number, street name): ")
             if ad1.upper() == "M":
                 main_menu()
-            address_line_1_pattern = r"^\d+\s+[A-Za-z]+(\s+[A-Za-z]+)*(\s+(Apt|Suite|St|Rd|Lane|Blvd|Ave|Dr|Court|Pl))?(\s*\d+[A-Za-z]?)?$"
+            address_line_1_pattern = r"^\d+\s+[\w\s\-']+(\s+(Apt|Suite|St|Rd|Lane|Blvd|Ave|Dr|Court|Pl|Road|Street|Way|Close))?(\s*\d*[A-Za-z]?)?$"
 
             if match(address_line_1_pattern, ad1):
                 break
@@ -544,7 +562,6 @@ def registering_user():
     print("Returing to main menu.")
     sleep(1)
 class Accounts:
-    dictionary_of_accounts = {} # this was made ofr future users, if they need all information
     def __init__(self, email, a_password, name, surname, date_of_birth, gender,
                  job_role, nhs_blood_donor, nhs_organ_donor, address_line_1, address_line_2 ):
         self.email = email
@@ -559,42 +576,38 @@ class Accounts:
         self.Address_Line_1 = address_line_1
         self.Address_Line_2 = address_line_2
 
-        Accounts.dictionary_of_accounts[email] = self
         self.add_to_role_accounts()
 
-
-    def __repr__(self):
-        return (f"Accounts(email='{self.email}', name='{self.name}', surname='{self.surname}', "
-                f"date_of_birth='{self.date_of_birth}', gender='{self.gender}', job_role='{self.job_role}', "
-                f"NHS_blood_donor='{self.NHS_blood_donor}', NHS_organ_donor='{self.NHS_organ_donor}', "
-                f"Address_Line_1='{self.Address_Line_1}', Address_Line_2='{self.Address_Line_2}')")
-
     def add_to_role_accounts(self):
-        # Add the account directly to the appropriate role in registered_users
+        user_details = {
+            "email": self.email,
+            "password": self.password,
+            "name": self.name,
+            "surname": self.surname,
+            "date_of_birth": self.date_of_birth,
+            "gender": self.gender,
+            "NHS_blood_donor": self.NHS_blood_donor,
+            "NHS_organ_donor": self.NHS_organ_donor,
+            "Address_Line_1": self.Address_Line_1,
+            "Address_Line_2": self.Address_Line_2
+        }
+
+        # Add to the appropriate role in registered_users
         if self.job_role in registered_users:
-            registered_users[self.job_role][self.email] = self.password
+            registered_users[self.job_role][self.email] = user_details
         else:
-            # If the role does not exist, create it (though this shouldn't normally happen)
-            registered_users[self.job_role] = {self.email: self.password}
+            # If the role does not exist, create it
+            registered_users[self.job_role] = {self.email: user_details}
 
         # Save the updated registered_users dictionary to the JSON file
         save_accounts(registered_users)
-
-    @classmethod
-    def display_all_accounts(cls):
-        if cls.dictionary_of_accounts:
-            print("All registered accounts:")
-            for email, account in cls.dictionary_of_accounts.items():
-                print(f"Email: {email}, Account Details: {account}")
-        else:
-            print("No accounts have been registered yet.")
 #==========================================================
 
 
 #==================Login Function==========================
 def reset_password():
-    print("=" * 45)
-    print("PASSWORD RESET".center(45))
+    print("=" * 80)
+    print("PASSWORD RESET".center(80))
     print("\nEnter 'M' to return to main menu\n")
     count = 10
 
@@ -670,12 +683,12 @@ def reset_password():
     main_menu()
     return
 def login_user(role):
-    print("-" * 45)
+    print("-" * 80)
     print("Please enter your details \n\nEnter 'R' to return to reset password\nEnter 'M' to return to main menu\n")
 
     login_attempts = 10
     while login_attempts > 0:
-        email_address = input("Email address: ")
+        email_address = input("Email address: ").strip().lower()
         if email_address.upper() == "R":
             reset_password()
         elif email_address.upper() == "M":
@@ -704,9 +717,15 @@ def login_user(role):
             elif login_password.upper() == "M":
                 main_menu()
 
-            if email_address in registered_users["admin"] and registered_users["admin"][email_address] == login_password:
+            # if email_address in registered_users["admin"] and registered_users["admin"][email_address] == login_password:
+            #     print("Admin login successful")
+            #     admins_page()
+
+            if email_address in map(str.lower, registered_users["admin"]) and \
+                    registered_users["admin"][email_address]["password"] == login_password:
                 print("Admin login successful")
                 admins_page()
+
 
             result = verify_credentials(email_address, login_password, role=role)
 
@@ -732,15 +751,15 @@ def login_user(role):
         break
 def login_menu():
     while True:
-        print("=" * 45)
-        print("LOGIN AS:".center(45))
+        print("=" * 80)
+        print("LOGIN AS:".center(80))
         print("[ 1 ] Patient")
         print("[ 2 ] GP")
         print("[ 3 ] Admin")
         print("[ M ] Main menu")
         print("[ E ] Exit")
 
-        user = input("Please choose an option: ")
+        user = input("Please choose an option: ").strip()
         if user == "1":
             login_user("patient")
         elif user == "2":
@@ -748,7 +767,7 @@ def login_menu():
         elif user == "3":
             login_user("admin")
         elif user.upper() == "E":
-            print("=" * 45)
+            print("=" * 80)
             print("Exiting!")
             # uninstall_modules()
             exit()
@@ -762,8 +781,8 @@ def login_menu():
 #=======================Main menu=========================
 def main_menu():
     while True:
-        print("=" * 45)
-        print("UCL Management System".center(45))
+        print("=" * 80)
+        print("UCL Management System".center(80))
         print("[ 1 ] Login")
         print("[ 2 ] Register")
         print("[ E ] Exit")
@@ -774,10 +793,10 @@ def main_menu():
         elif choice == "2":
             registering_user()
         elif choice.upper() == "E":
-            print("=" * 45)
-            print("EXITING!".center(45))
+            print("=" * 80)
+            print("EXITING!".center(80))
             # uninstall_modules()
-            Accounts.display_all_accounts()
+            # Accounts.display_all_accounts()
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
@@ -797,7 +816,7 @@ call_function()
 #=========================================================
 
 
-# Accounts.display_all_accounts()
+
 
 
 
