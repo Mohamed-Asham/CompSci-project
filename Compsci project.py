@@ -133,7 +133,21 @@ def load_accounts():
 
         for role, accounts in data.items():
             for email, details in accounts.items():
-                if isinstance(details, str):
+                # Only overwrite if the details are missing or incomplete
+                if isinstance(details, dict):
+                    # Ensure all keys exist, but keep existing values
+                    details.setdefault("email", email)
+                    details.setdefault("password", "Unknown")
+                    details.setdefault("name", "Unknown")
+                    details.setdefault("surname", "Unknown")
+                    details.setdefault("date_of_birth", "Unknown")
+                    details.setdefault("gender", "Unknown")
+                    details.setdefault("NHS_blood_donor", "Unknown")
+                    details.setdefault("NHS_organ_donor", "Unknown")
+                    details.setdefault("Address_Line_1", "Unknown")
+                    details.setdefault("Address_Line_2", "Unknown")
+                else:
+                    # Convert old format to new structured format
                     data[role][email] = {
                         "email": email,
                         "password": details,
@@ -144,7 +158,8 @@ def load_accounts():
                         "NHS_blood_donor": "Unknown",
                         "NHS_organ_donor": "Unknown",
                         "Address_Line_1": "Unknown",
-                        "Address_Line_2": "Unknown" }
+                        "Address_Line_2": "Unknown"
+                    }
 
         if not data["admin"]:
             data["admin"]["admin1@gmail.com"] = {
@@ -162,7 +177,7 @@ def load_accounts():
 
         return data
     except FileNotFoundError:
-        return {
+        default_data = {
             "patient": {},
             "gp": {"gp1@gmail.com": {
                     "email": "gp1@gmail.com",
@@ -189,6 +204,10 @@ def load_accounts():
                     "Address_Line_1": "Unknown",
                     "Address_Line_2": "Unknown"
                 }}}
+        # Save the default data to accounts.json
+        save_accounts(default_data)
+        return default_data
+
     except Exception as e:
         print(f"Error loading accounts: {e}")
         return {
@@ -218,10 +237,12 @@ def load_accounts():
                     "Address_Line_1": "Unknown",
                     "Address_Line_2": "Unknown"
                 }}}
-
 def save_accounts(new_account=None):
-    with open(DATA_FILE, "w") as file:
-        dump(new_account, file, indent=4)
+    try:
+        with open(DATA_FILE, "w") as file:
+            dump(new_account, file, indent=4)
+    except Exception as e:
+        print(f"Error saving accounts: {e}")
 registered_users = load_accounts()
 #==========================================================
 
@@ -318,7 +339,7 @@ def patients_page():
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ")
+        choice = input("\nPlease select and option: ").strip()
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
@@ -344,7 +365,7 @@ def gp_page():
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ")
+        choice = input("\nPlease select and option: ").strip()
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
@@ -377,7 +398,7 @@ def admins_page():
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ")
+        choice = input("\nPlease select and option: ").strip()
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
@@ -420,15 +441,15 @@ def registering_user():
     print("=" * 80)
     print("REGISTERING".center(80))
     print("Please enter your details \n\nEnter 'M' to return to main menu\n")
-    first_name = input("First name: ")
+    first_name = input("First name: ").strip()
     if first_name.upper() == "M":
         main_menu()
-    sur_name = input("Last name: ")
+    sur_name = input("Last name: ").strip()
     if sur_name.upper() == "M":
         main_menu()
 
     while True:
-        date_input = input("Birth date (DD/MM/YYYY): ")  # Pad single digit day with zero if necessary
+        date_input = input("Birth date (DD/MM/YYYY): ").strip()  # Pad single digit day with zero if necessary
         if date_input.upper() == "M":
             main_menu()
         else:
@@ -458,7 +479,7 @@ def registering_user():
 
 
     while True:
-        role = input("Are you a Patient or GP? : ")
+        role = input("Are you a Patient or GP? : ").strip()
         if role.upper() == "M":
             main_menu()
         role = role.replace(" ", "").strip().lower()
@@ -471,7 +492,7 @@ def registering_user():
 
 
     while True:
-        email_address = input("Email address: ")
+        email_address = input("Email address: ").strip()
         email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
         if email_address.upper() == "M":
             main_menu()
@@ -490,7 +511,7 @@ def registering_user():
 
 
     while True:
-        input_password = input("Password [8 characters min, 1 uppercase letter min, and 1 number min]: ")
+        input_password = input("Password [8 characters min, 1 uppercase letter min, and 1 number min]: ").strip()
         if input_password.upper() == "M":
             main_menu()
 
@@ -527,7 +548,7 @@ def registering_user():
         print ("[ 2 ] Female")
 
         try:
-            user_gender = input("Please choose an option: ")
+            user_gender = input("Please choose an option: ").strip()
             if user_gender.upper() == "M":
                 main_menu()
 
@@ -548,7 +569,7 @@ def registering_user():
         print ("[ 2 } No")
 
         try:
-            a = input("Please choose an option: ")
+            a = input("Please choose an option: ").strip()
             if a.upper() == "M":
                 main_menu()
 
@@ -569,7 +590,7 @@ def registering_user():
         print ("[ 2 } No")
 
         try:
-            b = input("Please choose an option: ")
+            b = input("Please choose an option: ").strip()
             if b.upper() == "M":
                 main_menu()
 
@@ -721,7 +742,7 @@ def reset_password():
 
         password_pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
 
-        if new_password == registered_users[roless][email_addresss]:
+        if new_password == registered_users[roless][email_addresss]["password"]:
             print("New password cannot be same as previous password")
             tries -= 1
         elif not match(password_pattern, new_password):
@@ -736,7 +757,7 @@ def reset_password():
             else:
                 break
 
-    registered_users[roless][email_addresss] = new_password
+    registered_users[roless][email_addresss]["password"] = new_password
     save_accounts(registered_users)
     print("Password reset successfully.")
     main_menu()
