@@ -1,5 +1,4 @@
 
-
 #=======================Modules=============================
 from importlib import import_module
 from time import sleep
@@ -150,16 +149,60 @@ def load_accounts():
     except FileNotFoundError:
         return {
             "patient": {},
-            "gp": {},
-            "admin": {}
-        }
+            "gp": {"gp1@gmail.com": {
+                    "email": "gp1@gmail.com",
+                    "password": "password1",
+                    "name": "Unknown",
+                    "surname": "Unknown",
+                    "date_of_birth": "Unknown",
+                    "gender": "Unknown",
+                    "NHS_blood_donor": "Unknown",
+                    "NHS_organ_donor": "Unknown",
+                    "Address_Line_1": "Unknown",
+                    "Address_Line_2": "Unknown"
+                }},
+            "admin": {
+                "admin1@gmail.com": {
+                    "email": "admin1@gmail.com",
+                    "password": "password1",
+                    "name": "Unknown",
+                    "surname": "Unknown",
+                    "date_of_birth": "Unknown",
+                    "gender": "Unknown",
+                    "NHS_blood_donor": "Unknown",
+                    "NHS_organ_donor": "Unknown",
+                    "Address_Line_1": "Unknown",
+                    "Address_Line_2": "Unknown"
+                }}}
     except Exception as e:
         print(f"Error loading accounts: {e}")
         return {
             "patient": {},
-            "gp": {},
-            "admin": {}
-        }
+            "gp": {"gp1@gmail.com": {
+                    "email": "gp1@gmail.com",
+                    "password": "password1",
+                    "name": "Unknown",
+                    "surname": "Unknown",
+                    "date_of_birth": "Unknown",
+                    "gender": "Unknown",
+                    "NHS_blood_donor": "Unknown",
+                    "NHS_organ_donor": "Unknown",
+                    "Address_Line_1": "Unknown",
+                    "Address_Line_2": "Unknown"
+                }},
+            "admin": {
+                "admin1@gmail.com": {
+                    "email": "admin1@gmail.com",
+                    "password": "password1",
+                    "name": "Unknown",
+                    "surname": "Unknown",
+                    "date_of_birth": "Unknown",
+                    "gender": "Unknown",
+                    "NHS_blood_donor": "Unknown",
+                    "NHS_organ_donor": "Unknown",
+                    "Address_Line_1": "Unknown",
+                    "Address_Line_2": "Unknown"
+                }}}
 
 def save_accounts(new_account=None):
     with open(DATA_FILE, "w") as file:
