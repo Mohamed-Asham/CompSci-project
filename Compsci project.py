@@ -147,7 +147,6 @@ def load_accounts():
                     details.setdefault("Address_Line_1", "Unknown")
                     details.setdefault("Address_Line_2", "Unknown")
                 else:
-                    # Convert old format to new structured format
                     data[role][email] = {
                         "email": email,
                         "password": details,
@@ -210,20 +209,20 @@ def load_accounts():
 
     except Exception as e:
         print(f"Error loading accounts: {e}")
-        return {
+        defaults_data = {
             "patient": {},
             "gp": {"gp1@gmail.com": {
-                    "email": "gp1@gmail.com",
-                    "password": "password1",
-                    "name": "Unknown",
-                    "surname": "Unknown",
-                    "date_of_birth": "Unknown",
-                    "gender": "Unknown",
-                    "NHS_blood_donor": "Unknown",
-                    "NHS_organ_donor": "Unknown",
-                    "Address_Line_1": "Unknown",
-                    "Address_Line_2": "Unknown"
-                }},
+                "email": "gp1@gmail.com",
+                "password": "password1",
+                "name": "Unknown",
+                "surname": "Unknown",
+                "date_of_birth": "Unknown",
+                "gender": "Unknown",
+                "NHS_blood_donor": "Unknown",
+                "NHS_organ_donor": "Unknown",
+                "Address_Line_1": "Unknown",
+                "Address_Line_2": "Unknown"
+            }},
             "admin": {
                 "admin1@gmail.com": {
                     "email": "admin1@gmail.com",
@@ -237,6 +236,9 @@ def load_accounts():
                     "Address_Line_1": "Unknown",
                     "Address_Line_2": "Unknown"
                 }}}
+        # Save the default data to accounts.json
+        save_accounts(defaults_data)
+        return default_data
 def save_accounts(new_account=None):
     try:
         with open(DATA_FILE, "w") as file:
@@ -433,8 +435,9 @@ def verify_credentials(email, v_password, role):
     else:
         return "Email not found"
 def checking_email(email):
+    email = email.lower()
     for role_accounts in registered_users.values():
-        if email in role_accounts:
+        if email in map(str.lower, role_accounts.keys()):  # Ensure case-insensitive comparison
             return "Email already registered"
     return "Email available"
 def registering_user():
@@ -750,12 +753,15 @@ def reset_password():
             tries -= 1
         elif tries == 1:
             print("Too many incorrect inputs. Returning to main menu")
-        else:
+        elif match(password_pattern, new_password):
             confirm_password = input("Confirm password: ")
             if confirm_password != new_password:
                 print("Passwords do not match, please enter password again")
             else:
                 break
+        else:
+            break
+
 
     registered_users[roless][email_addresss]["password"] = new_password
     save_accounts(registered_users)
