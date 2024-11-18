@@ -187,29 +187,34 @@ def delete_accounts():
             admins_page()
             return
 
-        if not choice.isdigit():
-            print("Invalid input. Please enter a number corresponding to an account.")
+        try:
+            account_numbers = [int(num.strip()) for num in choice.split(",")]
+        except ValueError:
+            print("Invalid input. Please enter numbers corresponding to accounts, separated by commas.")
             continue
 
-        account_number = int(choice)
-        if account_number not in account_mapping:
-            print(f"Invalid selection. No account corresponds to number {account_number}.")
+        invalid_numbers = [num for num in account_numbers if num not in account_mapping]
+        if invalid_numbers:
+            print(f"Invalid numbers found: {', '.join(map(str, invalid_numbers))}")
             continue
 
-        role, email_to_delete = account_mapping[account_number]
-        confirming_option = input(f"Confirm deletion of account [ {account_number} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
-        if confirming_option == "Y":
-            del registered_users[role][email_to_delete]
-            save_accounts(registered_users)
-            print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
-            sleep(2)
-            print("\nUpdated Accounts:")
-            display_all_accounts()
+        # Process valid account numbers
+        for numbers in account_numbers:
+            role, email_to_delete = account_mapping[numbers]
+            confirming_option = input(
+                f"Confirm deletion of account [ {numbers} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
+            if confirming_option == "Y":
+                del registered_users[role][email_to_delete]
+                save_accounts(registered_users)
+                print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
+                sleep(2)
+                print("\nUpdated Accounts:")
+                display_all_accounts()
+            elif confirming_option == "N":
+                print("Account deletion cancelled.")
+            else:
+                print("Invalid input. Please confirm with 'Y' or 'N'")
 
-        elif confirming_option == "N":
-            print("Account deletion cancelled.")
-        else:
-            print("Invalid input. Please confirm with 'Y' or 'N'")
 #other functions...
 #==========================================================
 
@@ -471,10 +476,10 @@ def registering_user():
                 main_menu()
 
             if a == "1":
-                a = "Is a blood donor"
+                a = "IS Blood donor"
                 break
             elif a=="2":
-                a = "Is NOT a blood donor"
+                a = "NOT Blood donor"
                 break
             else:
                 print ("Please choose '1', '2' or 'M' to return to menu")
@@ -492,10 +497,10 @@ def registering_user():
                 main_menu()
 
             if b == "1":
-                b = "Is an organ donor"
+                b = "IS Organ donor"
                 break
             elif b=="2":
-                b = "Is NOT an organ donor"
+                b = "NOT Organ donor"
                 break
             else:
                 print ("Please choose '1', '2' or 'M' to return to menu")
@@ -539,7 +544,7 @@ def registering_user():
     print("Returing to main menu.")
     sleep(1)
 class Accounts:
-    dictionary_of_accounts = {}
+    dictionary_of_accounts = {} # this was made ofr future users, if they need all information
     def __init__(self, email, a_password, name, surname, date_of_birth, gender,
                  job_role, nhs_blood_donor, nhs_organ_donor, address_line_1, address_line_2 ):
         self.email = email
@@ -772,6 +777,7 @@ def main_menu():
             print("=" * 45)
             print("EXITING!".center(45))
             # uninstall_modules()
+            Accounts.display_all_accounts()
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
@@ -791,7 +797,7 @@ call_function()
 #=========================================================
 
 
-
+# Accounts.display_all_accounts()
 
 
 
