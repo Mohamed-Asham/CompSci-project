@@ -145,6 +145,21 @@ def load_accounts():
                         "NHS_organ_donor": "Unknown",
                         "Address_Line_1": "Unknown",
                         "Address_Line_2": "Unknown" }
+
+        if not data["admin"]:
+            data["admin"]["admin1@gmail.com"] = {
+                "email": "admin1@gmail.com",
+                "password": "password1",
+                "name": "Default",
+                "surname": "Admin",
+                "date_of_birth": "Unknown",
+                "gender": "Unknown",
+                "NHS_blood_donor": "Unknown",
+                "NHS_organ_donor": "Unknown",
+                "Address_Line_1": "Unknown",
+                "Address_Line_2": "Unknown"
+            }
+
         return data
     except FileNotFoundError:
         return {
