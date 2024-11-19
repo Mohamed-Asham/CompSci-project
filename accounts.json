@@ -1,0 +1,44 @@
+{
+    "patient": {
+        "mnedjadi2003@gmail.com": {
+            "email": "mnedjadi2003@gmail.com",
+            "password": "Yamina20",
+            "name": "Mo",
+            "surname": "Nedj",
+            "date_of_birth": "05/11/2003",
+            "gender": "Female",
+            "NHS_blood_donor": "IS Blood donor",
+            "NHS_organ_donor": "IS Organ donor",
+            "Address_Line_1": "401 Jutsum House",
+            "Address_Line_2": "237323"
+        }
+    },
+    "gp": {
+        "gp1@gmail.com": {
+            "email": "gp1@gmail.com",
+            "password": "password1",
+            "name": "Unknown",
+            "surname": "Unknown",
+            "date_of_birth": "Unknown",
+            "gender": "Unknown",
+            "NHS_blood_donor": "Unknown",
+            "NHS_organ_donor": "Unknown",
+            "Address_Line_1": "Unknown",
+            "Address_Line_2": "Unknown"
+        }
+    },
+    "admin": {
+        "admin1@gmail.com": {
+            "email": "admin1@gmail.com",
+            "password": "password1",
+            "name": "Unknown",
+            "surname": "Unknown",
+            "date_of_birth": "Unknown",
+            "gender": "Unknown",
+            "NHS_blood_donor": "Unknown",
+            "NHS_organ_donor": "Unknown",
+            "Address_Line_1": "Unknown",
+            "Address_Line_2": "Unknown"
+        }
+    }
+}

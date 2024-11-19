@@ -320,7 +320,58 @@ def delete_accounts():
 
 
 #====================Patient Homepage======================
-#...
+def update_account_page(email_address):
+    data=load_accounts()
+    account_details= data["patient"][email_address]
+    print("These are your current account details:\n")
+    counter=1
+    for key,value in account_details.items():
+        if key != "password":
+            print("[",counter,"] ",(key[0].upper())+key[1:len(key)].replace("_"," "),": ",value)
+            counter+=1
+    print("\n")
+    update_option = int(input("Please select a option to edit:"))
+
+    if update_option == 1:
+        while True:
+            new_email= input("Please enter your new email address:").strip()
+            email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
+            email_check = checking_email(new_email)
+
+            if email_check == "Email already registered":
+                print("This email is already registered. Please use a different email.")
+            else:
+                if match(email_pattern, new_email):
+                    break
+                elif not match(email_pattern, new_email):
+                    print("Invalid email format. Please enter a valid email.")
+                else:
+                    print("Invalid email format. Please enter a valid email.")
+        account_details["email"]= new_email
+        del data["patient"][email_address]
+        data["patient"][new_email]= account_details
+
+    elif update_option ==2:
+        new_first_name = input("Please enter your new first name: ").strip()
+        account_details["name"]= new_first_name
+        data["patient"][email_address]= account_details
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #==========================================================
 
 
@@ -330,7 +381,7 @@ def delete_accounts():
 
 
 #====================Homepage Accounts=====================
-def patients_page():
+def patients_page(email_address):
     print("=" * 80)
     print("PATIENT HOMEPAGE".center(80))
     print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80), "green"))
@@ -351,8 +402,7 @@ def patients_page():
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            update_account_page(email_address)
         else:
             print("Please choose a valid option '1' , '2', '3', or 'X'")
 def gp_page():
@@ -818,12 +868,12 @@ def login_user(role):
             if result == True:
                 print(f"{role.capitalize()} login successful")
                 if role == "patient":
-                    patients_page()
+                    patients_page(email_address)
                 elif role == "gp":
                     gp_page()
                 elif role == "admin":
                     admins_page()
-                return
+                return email_address
 
             elif result == "Incorrect password":
                 password_attempts -= 1
@@ -861,6 +911,7 @@ def login_menu():
             main_menu()
         else:
             print("Invalid choice! Please enter 1, 2, 3, E, or M.")
+
 #=========================================================
 
 
@@ -883,6 +934,7 @@ def main_menu():
             print("EXITING!".center(80))
             # uninstall_modules()
             # Accounts.display_all_accounts()
+            print(registered_users)
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
