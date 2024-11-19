@@ -131,6 +131,13 @@ def load_accounts():
         with open(DATA_FILE, "r") as file:
             data = load(file)
 
+        if "admin" not in data:
+            data["admin"] = {}
+        if "gp" not in data:
+            data["gp"] = {}
+        if "patient" not in data:
+            data["patient"] = {}
+
         for role, accounts in data.items():
             for email, details in accounts.items():
                 # Only overwrite if the details are missing or incomplete
@@ -160,7 +167,7 @@ def load_accounts():
                         "Address_Line_2": "Unknown"
                     }
 
-        if not data["admin"]:
+        if "admin1@gmail.com" not in data["admin"]:
             data["admin"]["admin1@gmail.com"] = {
                 "email": "admin1@gmail.com",
                 "password": "password1",
@@ -173,6 +180,7 @@ def load_accounts():
                 "Address_Line_1": "Unknown",
                 "Address_Line_2": "Unknown"
             }
+            save_accounts(data)
 
         return data
     except FileNotFoundError:
@@ -208,43 +216,60 @@ def load_accounts():
         return default_data
 
     except Exception as e:
+        # Log the error but attempt to recover valid data if possible
         print(f"Error loading accounts: {e}")
-        defaults_data = {
-            "patient": {},
-            "gp": {"gp1@gmail.com": {
-                "email": "gp1@gmail.com",
-                "password": "password1",
-                "name": "Unknown",
-                "surname": "Unknown",
-                "date_of_birth": "Unknown",
-                "gender": "Unknown",
-                "NHS_blood_donor": "Unknown",
-                "NHS_organ_donor": "Unknown",
-                "Address_Line_1": "Unknown",
-                "Address_Line_2": "Unknown"
-            }},
-            "admin": {
-                "admin1@gmail.com": {
-                    "email": "admin1@gmail.com",
-                    "password": "password1",
-                    "name": "Unknown",
-                    "surname": "Unknown",
-                    "date_of_birth": "Unknown",
-                    "gender": "Unknown",
-                    "NHS_blood_donor": "Unknown",
-                    "NHS_organ_donor": "Unknown",
-                    "Address_Line_1": "Unknown",
-                    "Address_Line_2": "Unknown"
-                }}}
-        # Save the default data to accounts.json
-        save_accounts(defaults_data)
-        return default_data
-def save_accounts(new_account=None):
+        try:
+            with open(DATA_FILE, "r") as file:
+                partial_data = load(file)
+                print("Recovered partial data from corrupted file.")
+                return partial_data  # Return what can be recovered
+        except Exception as recovery_error:
+            print(f"Failed to recover data: {recovery_error}")
+            print("Returning a complete default structure.")
+            return {
+                "patient": {},
+                "gp": {},
+                "admin": {}
+            }
+def save_accounts(new_account=None, mode="merge"):
+    combined_accounts = {}
+
+    if mode == "merge":
+        try:
+            # Try to load existing data from the JSON file
+            with open(DATA_FILE, "r") as file:
+                possible_existing_accounts = load(file)
+                combined_accounts.update(possible_existing_accounts)  # Add existing data to combined dictionary
+        except FileNotFoundError:
+            combined_accounts = {}
+        except Exception as e:
+            combined_accounts = {}
+
+        # Combine new account information with the existing data
+        if new_account:
+            for role, accounts in new_account.items():
+                # Ensure the role exists in combined_accounts
+                if role not in combined_accounts:
+                    combined_accounts[role] = {}
+
+                # Merge accounts under this role
+                for email, details in accounts.items():
+                    if email in combined_accounts[role]:
+                        # Merge fields for existing account
+                        combined_accounts[role][email].update(details)
+                    else:
+                        # Add new account
+                        combined_accounts[role][email] = details
+    if mode == "overide":
+        combined_accounts = new_account
+
     try:
+        # Write the combined data back to the JSON file
         with open(DATA_FILE, "w") as file:
-            dump(new_account, file, indent=4)
+            dump(combined_accounts, file, indent=4)
     except Exception as e:
         print(f"Error saving accounts: {e}")
+
 registered_users = load_accounts()
 #==========================================================
 
@@ -305,7 +330,7 @@ def delete_accounts():
                 f"Confirm deletion of account [ {numbers} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
             if confirming_option == "Y":
                 del registered_users[role][email_to_delete]
-                save_accounts(registered_users)
+                save_accounts(registered_users, mode="overide")
                 print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
                 sleep(2)
                 print("\nUpdated Accounts:")
@@ -320,58 +345,7 @@ def delete_accounts():
 
 
 #====================Patient Homepage======================
-def update_account_page(email_address):
-    data=load_accounts()
-    account_details= data["patient"][email_address]
-    print("These are your current account details:\n")
-    counter=1
-    for key,value in account_details.items():
-        if key != "password":
-            print("[",counter,"] ",(key[0].upper())+key[1:len(key)].replace("_"," "),": ",value)
-            counter+=1
-    print("\n")
-    update_option = int(input("Please select a option to edit:"))
-
-    if update_option == 1:
-        while True:
-            new_email= input("Please enter your new email address:").strip()
-            email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
-            email_check = checking_email(new_email)
-
-            if email_check == "Email already registered":
-                print("This email is already registered. Please use a different email.")
-            else:
-                if match(email_pattern, new_email):
-                    break
-                elif not match(email_pattern, new_email):
-                    print("Invalid email format. Please enter a valid email.")
-                else:
-                    print("Invalid email format. Please enter a valid email.")
-        account_details["email"]= new_email
-        del data["patient"][email_address]
-        data["patient"][new_email]= account_details
-
-    elif update_option ==2:
-        new_first_name = input("Please enter your new first name: ").strip()
-        account_details["name"]= new_first_name
-        data["patient"][email_address]= account_details
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#...
 #==========================================================
 
 
@@ -381,7 +355,7 @@ def update_account_page(email_address):
 
 
 #====================Homepage Accounts=====================
-def patients_page(email_address):
+def patients_page():
     print("=" * 80)
     print("PATIENT HOMEPAGE".center(80))
     print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80), "green"))
@@ -402,7 +376,8 @@ def patients_page(email_address):
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            update_account_page(email_address)
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
+            main_menu()
         else:
             print("Please choose a valid option '1' , '2', '3', or 'X'")
 def gp_page():
@@ -868,12 +843,12 @@ def login_user(role):
             if result == True:
                 print(f"{role.capitalize()} login successful")
                 if role == "patient":
-                    patients_page(email_address)
+                    patients_page()
                 elif role == "gp":
                     gp_page()
                 elif role == "admin":
                     admins_page()
-                return email_address
+                return
 
             elif result == "Incorrect password":
                 password_attempts -= 1
@@ -911,7 +886,6 @@ def login_menu():
             main_menu()
         else:
             print("Invalid choice! Please enter 1, 2, 3, E, or M.")
-
 #=========================================================
 
 
@@ -934,7 +908,6 @@ def main_menu():
             print("EXITING!".center(80))
             # uninstall_modules()
             # Accounts.display_all_accounts()
-            print(registered_users)
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
