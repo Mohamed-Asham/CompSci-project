@@ -376,7 +376,7 @@ def update_account_page(email_address):
         del data["patient"][email_address]
         data["patient"][new_email]= account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file ,indent=4)
+            dump(data, file ,indent=4)
         print("Your email has been updated successfully.")
         patients_page(new_email)
 
@@ -385,7 +385,7 @@ def update_account_page(email_address):
         account_details["name"]= new_first_name
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your name has been upodated successfully")
         patients_page(email_address)
 
@@ -394,7 +394,7 @@ def update_account_page(email_address):
         account_details["surname"]= new_surname
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your surname has been upodated successfully")
         patients_page(email_address)
 
@@ -425,7 +425,7 @@ def update_account_page(email_address):
         account_details["date_of_birth"] = new_birthday
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your date of birth has been upodated successfully")
         patients_page(email_address)
 
@@ -450,7 +450,7 @@ def update_account_page(email_address):
         account_details["gender"] = new_gender
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your gender has been upodated successfully")
         patients_page(email_address)
 
@@ -474,7 +474,7 @@ def update_account_page(email_address):
         account_details["NHS_blood_donor"] = a_new
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your NHS blood donor status has been upodated successfully")
         patients_page(email_address)
 
@@ -500,7 +500,7 @@ def update_account_page(email_address):
         account_details["NHS_organ_donor"] = b_new
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your NHS organ donor status has been upodated successfully")
         patients_page(email_address)
 
@@ -518,7 +518,7 @@ def update_account_page(email_address):
         account_details["Address_Line_1"] = ad1_new
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your Address Line 1 has been upodated successfully")
         patients_page(email_address)
 
@@ -536,7 +536,7 @@ def update_account_page(email_address):
         account_details["Address_Line_2"] = ad2_new
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
-            json.dump(data, file, indent=4)
+            dump(data, file, indent=4)
         print("Your Address Line 2 has been upodated successfully")
         patients_page(email_address)
 
