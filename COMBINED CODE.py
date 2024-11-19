@@ -570,7 +570,6 @@ def patients_page(email_address):
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             update_account_page(email_address = email_address)
         else:
             print("Please choose a valid option '1' , '2', '3', or 'X'")
