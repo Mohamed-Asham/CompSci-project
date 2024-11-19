@@ -1,4 +1,4 @@
-HELLO CAN YOU SEE THIS !!!!!!
+
 #=======================Modules=============================
 from importlib import import_module
 from time import sleep
@@ -784,47 +784,48 @@ def registering_user():
         except Exception:
             print("Invalid option")
 
-    while True:
-        print ("NHS blood donor:")
-        print ("[ 1 ] Yes")
-        print ("[ 2 } No")
+    if role == "patient":
+        while True:
+            print ("NHS blood donor:")
+            print ("[ 1 ] Yes")
+            print ("[ 2 } No")
 
-        try:
-            a = input("Please choose an option: ").strip()
-            if a.upper() == "M":
-                main_menu()
+            try:
+                a = input("Please choose an option: ").strip()
+                if a.upper() == "M":
+                    main_menu()
 
-            if a == "1":
-                a = "IS Blood donor"
-                break
-            elif a=="2":
-                a = "NOT Blood donor"
-                break
-            else:
-                print ("Please choose '1', '2' or 'M' to return to menu")
-        except Exception:
-            print("Invalid option")
+                if a == "1":
+                    a = "IS Blood donor"
+                    break
+                elif a=="2":
+                    a = "NOT Blood donor"
+                    break
+                else:
+                    print ("Please choose '1', '2' or 'M' to return to menu")
+            except Exception:
+                print("Invalid option")
 
-    while True:
-        print ("NHS organ donor:")
-        print ("[ 1 ] Yes")
-        print ("[ 2 } No")
+        while True:
+            print ("NHS organ donor:")
+            print ("[ 1 ] Yes")
+            print ("[ 2 } No")
 
-        try:
-            b = input("Please choose an option: ").strip()
-            if b.upper() == "M":
-                main_menu()
+            try:
+                b = input("Please choose an option: ").strip()
+                if b.upper() == "M":
+                    main_menu()
 
-            if b == "1":
-                b = "IS Organ donor"
-                break
-            elif b=="2":
-                b = "NOT Organ donor"
-                break
-            else:
-                print ("Please choose '1', '2' or 'M' to return to menu")
-        except Exception:
-            print("Invalid option")
+                if b == "1":
+                    b = "IS Organ donor"
+                    break
+                elif b=="2":
+                    b = "NOT Organ donor"
+                    break
+                else:
+                    print ("Please choose '1', '2' or 'M' to return to menu")
+            except Exception:
+                print("Invalid option")
 
     while True:
         try:
@@ -854,8 +855,13 @@ def registering_user():
         except Exception:
             print("Invalid address, try again")
 
-    user = Accounts(email_address, input_password, first_name, sur_name,
+    if role == "patient":
+        user = Accounts(email_address, input_password, first_name, sur_name,
                                date_input, user_gender, role, a, b, ad1, ad2)
+    elif role == "gp":
+        user = Accounts(email_address, input_password, first_name, sur_name,
+                               date_input, user_gender, role, ad1, ad2)
+
 
     print("Your account has been made.")
     print("Current account is being registered to system...")
@@ -864,7 +870,7 @@ def registering_user():
     sleep(1)
 class Accounts:
     def __init__(self, email, a_password, name, surname, date_of_birth, gender,
-                 job_role, nhs_blood_donor, nhs_organ_donor, address_line_1, address_line_2 ):
+                 job_role, nhs_blood_donor=None, nhs_organ_donor=None, address_line_1="Unknown", address_line_2="Unknown" ):
         self.email = email
         self.password = a_password
         self.name = name
@@ -872,8 +878,8 @@ class Accounts:
         self.date_of_birth = date_of_birth
         self.gender = gender
         self.job_role = job_role
-        self.NHS_blood_donor = nhs_blood_donor
-        self.NHS_organ_donor = nhs_organ_donor
+        self.NHS_blood_donor = nhs_blood_donor or "Unknown"
+        self.NHS_organ_donor = nhs_organ_donor or "Unknown"
         self.Address_Line_1 = address_line_1
         self.Address_Line_2 = address_line_2
 
