@@ -269,7 +269,6 @@ def save_accounts(new_account=None, mode="merge"):
             dump(combined_accounts, file, indent=4)
     except Exception as e:
         print(f"Error saving accounts: {e}")
-
 registered_users = load_accounts()
 #==========================================================
 
@@ -355,23 +354,7 @@ def update_account_page(email_address):
             print("[",counter,"] ",(key[0].upper())+key[1:len(key)].replace("_"," "),": ",value)
             counter+=1
     print("\n")
-
-
-    while True:
-        update_option = input("Please select a option to edit: ").strip()
-        if update_option.isdigit() and 1<= int(update_option) <=9:
-            update_option=int(update_option)
-            break
-        else:
-            print("\n")
-            print("Invalid input. Please choose a valid option from the list below")
-            counter=1
-            for key, value in account_details.items():
-                if key != "password":
-                    print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
-                    counter += 1
-            print("\n")
-
+    update_option = int(input("Please select a option to edit:"))
 
     if update_option == 1:
         while True:
@@ -393,12 +376,7 @@ def update_account_page(email_address):
         data["patient"][new_email]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file ,indent=4)
-        print("Changing email address...")
-        sleep(2)
         print("Your email has been updated successfully.")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(new_email)
 
     elif update_option ==2:
@@ -407,12 +385,7 @@ def update_account_page(email_address):
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing first name...")
-        sleep(2)
         print("Your name has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
     elif update_option == 3:
@@ -421,12 +394,7 @@ def update_account_page(email_address):
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing new surname")
-        sleep(2)
         print("Your surname has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
     elif update_option == 4:
@@ -457,12 +425,7 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing date of birthday...")
-        sleep(2)
         print("Your date of birth has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
 
@@ -487,12 +450,7 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing gender...")
-        sleep(2)
         print("Your gender has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
     elif update_option == 6:
@@ -516,12 +474,7 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing NHS blood donor status...")
-        sleep(2)
-        print("Your NHS blood donor status has been updated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
+        print("Your NHS blood donor status has been upodated successfully")
         patients_page(email_address)
 
     elif update_option == 7:
@@ -547,12 +500,7 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing NHS organ donor status...")
-        sleep(2)
         print("Your NHS organ donor status has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
     elif update_option == 8:
@@ -570,12 +518,7 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing Address Line 1...")
-        sleep(2)
         print("Your Address Line 1 has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
 
     elif update_option == 9:
@@ -593,16 +536,8 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Changing Address Line 2...")
-        sleep(2)
         print("Your Address Line 2 has been upodated successfully")
-        sleep(1)
-        print("Returning to your homepage...")
-        sleep(1)
         patients_page(email_address)
-
-
-
 #==========================================================
 
 
@@ -677,7 +612,7 @@ def admins_page():
     print("[ 2 ] Activate/Deactivate or Delete accounts ")
     print("[ 3 ] Confirm/Un-confirm patient registration ")
     print("[ 4 ] Check in/out patients ")
-    print("[ 5 ] Change patient details ")
+    print("[ 5 ] Change patient/gp details ")
     print("[ X ] Logout")
 
     while True:
@@ -705,8 +640,6 @@ def admins_page():
 
 #=================Registration Functions===================
 def verify_credentials(email, v_password, role):
-    if role not in registered_users:
-        return "Invalid role"
     role_accounts = registered_users[role]
     if email in role_accounts:
         if role_accounts[email]["password"] == v_password:
@@ -1090,9 +1023,6 @@ def login_user(role):
             elif login_password.upper() == "M":
                 main_menu()
 
-            # if email_address in registered_users["admin"] and registered_users["admin"][email_address] == login_password:
-            #     print("Admin login successful")
-            #     admins_page()
 
             if email_address in map(str.lower, registered_users["admin"]) and \
                     registered_users["admin"][email_address]["password"] == login_password:
@@ -1160,7 +1090,7 @@ def main_menu():
         print("[ 2 ] Register")
         print("[ E ] Exit")
 
-        choice = input("Please choose an option: ")
+        choice = input("Please choose an option: ").strip()
         if choice == "1":
             login_menu()
         elif choice == "2":
