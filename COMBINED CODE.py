@@ -355,7 +355,23 @@ def update_account_page(email_address):
             print("[",counter,"] ",(key[0].upper())+key[1:len(key)].replace("_"," "),": ",value)
             counter+=1
     print("\n")
-    update_option = int(input("Please select a option to edit:"))
+
+
+    while True:
+        update_option = input("Please select a option to edit: ").strip()
+        if update_option.isdigit() and 1<= int(update_option) <=9:
+            update_option=int(update_option)
+            break
+        else:
+            print("\n")
+            print("Invalid input. Please choose a valid option from the list below")
+            counter=1
+            for key, value in account_details.items():
+                if key != "password":
+                    print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
+                    counter += 1
+            print("\n")
+
 
     if update_option == 1:
         while True:
@@ -377,7 +393,12 @@ def update_account_page(email_address):
         data["patient"][new_email]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file ,indent=4)
+        print("Changing email address...")
+        sleep(2)
         print("Your email has been updated successfully.")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(new_email)
 
     elif update_option ==2:
@@ -386,7 +407,12 @@ def update_account_page(email_address):
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing first name...")
+        sleep(2)
         print("Your name has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 3:
@@ -395,7 +421,12 @@ def update_account_page(email_address):
         data["patient"][email_address]= account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing new surname")
+        sleep(2)
         print("Your surname has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 4:
@@ -426,7 +457,12 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing date of birthday...")
+        sleep(2)
         print("Your date of birth has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
 
@@ -451,7 +487,12 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing gender...")
+        sleep(2)
         print("Your gender has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 6:
@@ -475,7 +516,12 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
-        print("Your NHS blood donor status has been upodated successfully")
+        print("Changing NHS blood donor status...")
+        sleep(2)
+        print("Your NHS blood donor status has been updated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 7:
@@ -501,7 +547,12 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing NHS organ donor status...")
+        sleep(2)
         print("Your NHS organ donor status has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 8:
@@ -519,7 +570,12 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing Address Line 1...")
+        sleep(2)
         print("Your Address Line 1 has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
 
     elif update_option == 9:
@@ -537,8 +593,15 @@ def update_account_page(email_address):
         data["patient"][email_address] = account_details
         with open("accounts.json", "w") as file:
             dump(data, file, indent=4)
+        print("Changing Address Line 2...")
+        sleep(2)
         print("Your Address Line 2 has been upodated successfully")
+        sleep(1)
+        print("Returning to your homepage...")
+        sleep(1)
         patients_page(email_address)
+
+
 
 #==========================================================
 
