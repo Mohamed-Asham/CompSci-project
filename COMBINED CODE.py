@@ -361,7 +361,7 @@ def update_account_page(email_address):
         print("\n")
 
 
-        update_option = input("Please select a option to edit: ").strip()
+        update_option = input("Please select an option to edit: ").strip()
         if (update_option.isdigit() and 0 <= int(update_option) <= 9) :
             update_option = int(update_option)
         else:
