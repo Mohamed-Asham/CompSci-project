@@ -760,7 +760,7 @@ def registering_user():
 
         has_upper = False
         has_digit = False
-        password_pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
+        password_pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d!@#$%^&*()_+{}|:<>?~]{8,}$'
 
         for char in input_password:
             if char.isupper():
