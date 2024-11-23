@@ -404,8 +404,21 @@ def update_account_page(email_address):
         elif update_option == 2:
             new_first_name = input("Please enter your new first name: ").strip()
             if new_first_name != account_details["name"]:
-                account_details["name"] = new_first_name
-                updates_made= True
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["name"] = new_first_name
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        print("Returning to your patient homepage...")
+                        sleep(1)
+                        patients_page(email_address)
+
+                    else:
+                        print("Please input a valid option, either Y or N ")
+
             else:
                 print("This is already your current first name")
 
@@ -414,8 +427,21 @@ def update_account_page(email_address):
         elif update_option == 3:
             new_surname = input("Please enter your new surname").strip()
             if new_surname != account_details["surname"]:
-                account_details["surname"] = new_surname
-                updates_made= True
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["surname"] = new_surname
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        print("Returning to your patient homepage...")
+                        sleep(1)
+                        patients_page(email_address)
+
+                    else:
+                        print("Please input a valid option, either Y or N ")
+
             else:
                 print("This is already your current surname")
 
@@ -449,14 +475,14 @@ def update_account_page(email_address):
                 elif new_gender_option == "2":
                     new_gender = "Female"
                 else:
-                    print("Please choose a valid option '1' or '2'")
+                    print("Please choose a valid option '1' or '2' ")
 
                 if new_gender != account_details["gender"]:
                     account_details["gender"] = new_gender
                     updates_made= True
                     break
                 else:
-                    print("Please choose a valid option '1' or '2'")
+                    print("Please choose a valid option '1' or '2' ")
                     break
 
 
@@ -466,9 +492,9 @@ def update_account_page(email_address):
                 print("[ 1 ] Yes")
                 print("[ 2 } No")
                 donor_new = input("Please choose an option: ").strip()
-                if donor_new_option == "1":
+                if donor_new == "1":
                     donor_new = "IS Blood donor"
-                elif donor_new_option == "2":
+                elif donor_new == "2":
                     donor_new = "NOT Blood donor"
                 else:
                     print("Invalid choice, Please choose 1 or 2")
@@ -512,8 +538,21 @@ def update_account_page(email_address):
 
             ad1_new = input("Please enter a new Address Line 1 ")
             if ad1_new != account_details["Address_Line_1"]:
-                account_details["Address_Line_1"] = ad1_new
-                updates_made= True
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_1"] = ad1_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        print("Returning to your patient homepage...")
+                        sleep(1)
+                        patients_page(email_address)
+
+                    else:
+                        print("Please input a valid option, either Y or N ")
+
             else:
                 print("This is already your current Address Line 2")
 
@@ -521,8 +560,20 @@ def update_account_page(email_address):
         elif update_option == 9:
             ad2_new = input("Please enter a new Address Line 2 ")
             if ad2_new != account_details["Address_Line_2"]:
-                account_details["Address_Line_2"] = ad2_new
-                updates_made = True
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_2"] = ad2_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        print("Returning to your patient homepage...")
+                        sleep(1)
+                        patients_page(email_address)
+
+                    else:
+                        print("Please input a valid option, either Y or N ")
             else:
                 print("This is already your current Address Line 2")
 
@@ -1135,6 +1186,7 @@ def main_menu():
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
+
 #=========================================================
 
 

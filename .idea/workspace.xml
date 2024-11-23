@@ -32,15 +32,16 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.COMBINED CODE.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Combined Asham X Mohamed.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Compsci project.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.COMBINED CODE.executor": "Run",
+    "Python.Combined Asham X Mohamed.executor": "Run",
+    "Python.Compsci project.executor": "Run",
+    "Python.myproject.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "main"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="Compsci project" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="CompSci-project" />
@@ -68,7 +69,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
+        <option value="bundled-python-sdk-884f5ed5d46b-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.22855.92" />
       </set>
     </attachedChunks>
   </component>
