@@ -283,7 +283,7 @@ def save_accounts(new_account=None, mode="merge"):
                     combined_accounts[role][email].setdefault("NHS_organ_donor", "Unknown")
                     combined_accounts[role][email].setdefault("Address_Line_1", "Unknown")
                     combined_accounts[role][email].setdefault("Address_Line_2", "Unknown")
-                    combined_accounts[role][email].setdefault("journals", "Unknown")
+                    combined_accounts[role][email].setdefault("journals", [])
                     combined_accounts[role][email].setdefault("conditions", [])
                     combined_accounts[role][email].setdefault("clinical_notes", "None")
 
@@ -484,7 +484,7 @@ def update_account_page(email_address):
         print("These are your current account details:\n")
         counter = 1
         for key, value in account_details.items():
-            if key != "password" and key!= "journals":
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
                 print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
                 counter += 1
         print("[ 0 ]  Exit to Homepage ")
@@ -747,7 +747,7 @@ def update_account_page(email_address):
         print("Updated account details:")
         print("")
         for key,value in account_details.items():
-            if key!= "password" and key!= "journals":
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
                 print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
 
         print("\n")
@@ -767,9 +767,9 @@ def journal_page(email_address):
     while True:
         print("="* 80)
         print("JOURNALS PAGE".center(80))
-        print("[1] View previous entries")
-        print("[2] Make a new journal entry")
-        print("[H] Return to your homepage")
+        print("[ 1 ] View previous entries")
+        print("[ 2 ] Make a new journal entry")
+        print("[ H ] Return to your homepage")
         choice= input("\nPlease select an option: ").strip().upper()
         if choice == "1":
             view_journal_entries(email_address)
@@ -1062,7 +1062,8 @@ def patients_page(email_address):
     print("[ 1 ] Book and manage appointments")
     print("[ 2 ] Change default GP")
     print("[ 3 ] Access meditation help & tips and more")
-    print("[ 4 ] Change account details")
+    print("[ 4 ] Access journal entries")
+    print("[ 5 ] Change account details")
     print("[ X ] Logout")
 
     while True:
@@ -1078,9 +1079,9 @@ def patients_page(email_address):
         elif choice == "3":
             mhresources(email_address=email_address)
         elif choice == "4":
-            update_account_page(email_address=email_address)
+            journal_page(email_address=email_address)
         elif choice == "5":
-            journal_page(email_address)
+            update_account_page(email_address=email_address)
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
 def gp_page():
@@ -1390,6 +1391,7 @@ class Accounts:
         self.NHS_organ_donor = nhs_organ_donor or "Unknown"
         self.Address_Line_1 = address_line_1
         self.Address_Line_2 = address_line_2
+        self.journals = []
         self.conditions = conditions if conditions is not None else []
 
         self.add_to_role_accounts()
@@ -1406,6 +1408,7 @@ class Accounts:
             "NHS_organ_donor": self.NHS_organ_donor or "Unknown",
             "Address_Line_1": self.Address_Line_1 or "Unknown",
             "Address_Line_2": self.Address_Line_2 or "Unknown",
+            "journals": [],
             "conditions": [],
             "clinical_notes": "None"
         }
