@@ -61,7 +61,7 @@ def category_menu(category_name):
         user_input = input("Enter the number corresponding to the resource: ").strip().lower()
 
         if user_input == "back":
-            return main_menu()
+            return mhresources()
 
         # Validate resource selection
         try:
@@ -88,7 +88,7 @@ def post_selection(category_name):
         if user_input == "1":
             return category_menu(category_name)
         elif user_input == "2":
-            return main_menu()
+            mhresources()
         elif user_input == "back":
             return "Returning to the patient homepage..."
         else:
@@ -98,3 +98,4 @@ def post_selection(category_name):
 # Example usage
 result = mhresources()
 print(result)
+

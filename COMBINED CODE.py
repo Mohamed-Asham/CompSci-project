@@ -11,10 +11,6 @@ from platform import system
 import os
 import subprocess
 
-import pandas
-import pyfiglet
-import tabulate
-import termcolor
 
 # List of required non-standard packages
 required_packages = ["pyfiglet", "termcolor", "pandas", "tabulate"]
@@ -373,6 +369,109 @@ def delete_accounts():
 
 
 #====================Patient Homepage======================
+
+#[ 1 ] Book and manage appointments
+#[ 2 ] Change default GP
+#[ 3 ] Access meditation help & tips and more
+#[ 4 ] Change account details
+#[ X ] Logout
+# Dictionary containing resources for different categories
+resources = {
+    "Breathing Practices": {
+        1: ("3 minute breathing practice", "https://drive.google.com/file/d/1nzkNZ9r2SWWn86NTDykEkCj4HosAgfGb/view"),
+        2: ("5 minute breathing practice", "https://drive.google.com/file/d/1eucLhrVRBT7FCTzdbpns7MCLb4PILK0t/view"),
+        3: ("10 minute breathing practice", "https://drive.google.com/file/d/1hGEntCirailnpjSlX4ZgGVbmd-qAQHr8/view"),
+    },
+    "Help with Sleep": {
+        1: ("Guided Imagery for Sleep by Dan Guerra", "https://insighttimer.com/danguerra/guided-meditations/guided-imagery-for-sleep-3"),
+        2: ("Progressive Relaxation Nidra by Ally Boothroyd", "https://insighttimer.com/allyboothroyd/guided-meditations/progressive-relaxation-nidra"),
+        3: ("Guided Meditation For Deep Sleep by Daphne Lyon", "https://insighttimer.com/daphnelyon/guided-meditations/guided-meditation-for-deep-sleep-4"),
+        4: ("A Guided Visualization Meditation For Deep & Restful Sleep", "https://insighttimer.com/movie123man/guided-meditations/a-guided-visualization-meditation-for-deep-and-restful-sleep"),
+    },
+    "Help with Anxiety": {
+        1: ("Decrease Anxiety & Increase Peace by Andrea Wachter", "https://insighttimer.com/andreawachter/guided-meditations/decrease-anxiety-and-increase-peace"),
+        2: ("Guided Meditation For Anxiety Relief by Elisa (Ellie) Bozmarova", "https://insighttimer.com/elliebozmarova/guided-meditations/guided-meditation-for-anxiety-relief"),
+    },
+    "Gratitude": {
+        1: ("Five-Minute Morning Practice On Gratitude by Julie Ela Grace", "https://insighttimer.com/julieelagrace/guided-meditations/five-minute-morning-meditation-on-gratitude"),
+        2: ("Gratitude Affirmations For The Body And Life by Julie Ela Grace", "https://insighttimer.com/julieelagrace/guided-meditations/gratitude-affirmations-for-the-body-and-life"),
+    },
+    "Stress & Burnout": {
+        1: ("Quick Stress Release by Saqib Rizvi", "https://insighttimer.com/saqibrizvi/guided-meditations/quick-stress-release"),
+        2: ("Relief From Stress & Pressure by Mary Maddux", "https://insighttimer.com/meditationoasis/guided-meditations/relief-from-stress-and-pressure"),
+    },
+}
+
+def mhresources(email_address):
+    """Function to display the main menu and navigate categories."""
+    while True:
+        print("\nAvailable Categories:")
+        for num, category in enumerate(resources.keys(), 1):
+            print(f"{num}. {category}")
+        print("Type 'exit' to return to the patient homepage.")
+
+        user_input = input("Enter the number corresponding to the category: ").strip().lower()
+
+        if user_input == "exit":
+            patients_page(email_address)
+
+        # Validate category selection
+        try:
+            category_num = int(user_input)
+            if 1 <= category_num <= len(resources):
+                category_name = list(resources.keys())[category_num - 1]
+                return category_menu(category_name, email_address)
+            else:
+                print("Invalid input. Please choose a valid category number.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+def category_menu(category_name, email_address):
+    """Function to display links for the selected category."""
+    print(f"\n{category_name} Resources:")
+    category_resources = resources[category_name]
+    for num, (description, _) in category_resources.items():
+        print(f"{num}. {description}")
+    print("Type 'back' to return to the main menu.")
+
+    while True:
+        user_input = input("Enter the number corresponding to the resource: ").strip().lower()
+
+        if user_input == "back":
+            mhresources(email_address=email_address)
+
+        # Validate resource selection
+        try:
+            resource_num = int(user_input)
+            if resource_num in category_resources:
+                resource_description, resource_link = category_resources[resource_num]
+                print(f"The link for '{resource_description}' is: {resource_link}")
+                post_selection(category_name, email_address)  # Follow-up after showing the link
+            else:
+                print("Invalid input. Please choose a valid resource number.")
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+
+def post_selection(category_name, email_address):
+    """Function to follow up after a resource selection."""
+    print("\nWe hope this resource was helpful.")
+    print("1. Explore more resources in this category.")
+    print("2. Explore other categories.")
+    print("Type 'back' to return to the patient homepage, if further support is needed.")
+
+    while True:
+        user_input = input("Enter the number corresponding to your choice or type 'back': ").strip().lower()
+
+        if user_input == "1":
+            return category_menu(category_name)
+        elif user_input == "2":
+            mhresources(email_address=email_address)
+        elif user_input == "back":
+            patients_page(email_address=email_address)
+        else:
+            print("Invalid input. Please enter a valid option.")
+
+
 def update_account_page(email_address):
     data = load_accounts()
     account_details = data["patient"][email_address]
@@ -520,10 +619,10 @@ def update_account_page(email_address):
                 print("NHS blood donor:")
                 print("[ 1 ] Yes")
                 print("[ 2 } No")
-                donor_new = input("Please choose an option: ").strip()
-                if donor_new == "1":
+                donor_new_option = input("Please choose an option: ").strip()
+                if donor_new_option == "1":
                     donor_new = "IS Blood donor"
-                elif donor_new == "2":
+                elif donor_new_option == "2":
                     donor_new = "NOT Blood donor"
                 else:
                     print("Invalid choice, Please choose 1 or 2")
@@ -642,14 +741,6 @@ def update_account_page(email_address):
             break
         elif edit_again!= "y":
             print("Invalid input, returning to the edit menu")
-
-
-
-
-
-
-
-
 #==========================================================
 
 
@@ -661,7 +752,7 @@ ACCOUNTS_FILE = "accounts.json"
 MEDICAL_RECORDS_FILE = "medical_records.json"
 
 # Function to load the accounts from the accounts.json file
-def load_accounts():
+def load_accounts2():
     if os.path.exists(ACCOUNTS_FILE):
         with open(ACCOUNTS_FILE, "r") as file:
             try:
@@ -680,7 +771,7 @@ def load_or_initialize_records():
                 return load(file)
             except JSONDecodeError:
                 # If the file is empty or corrupted, initialize it
-                accounts = load_accounts()  # Assume load_accounts() returns the accounts data
+                accounts = load_accounts2()
                 data_default = {"note": "", "date_created": None}
                 records = {}  # Create a dictionary for the medical records
 
@@ -697,7 +788,7 @@ def load_or_initialize_records():
                 return records  # Return the newly created records
     else:
         # If the file doesn't exist, initialize a new file
-        accounts = load_accounts()
+        accounts = load_accounts2()
         data_default = {"note": "", "date_created": None}
         records = {}
 
@@ -759,7 +850,7 @@ def add_patient_record():
     elif patient_email.upper() == "R":
         display_patient_records()
 
-    registered_users = load_accounts()
+    registered_users = load_accounts2()
     while True:
         if patient_email not in registered_users["patient"]:
             print("\nPatient not found.\n")
@@ -871,8 +962,9 @@ def patients_page(email_address):
     print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80), "green"))
     print("-" * 80)
     print("[ 1 ] Book and manage appointments")
-    print("[ 2 ] Change default GP ")
-    print("[ 3 ] Change account details")
+    print("[ 2 ] Change default GP")
+    print("[ 3 ] Access meditation help & tips and more")
+    print("[ 4 ] Change account details")
     print("[ X ] Logout")
 
     while True:
@@ -886,9 +978,11 @@ def patients_page(email_address):
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            update_account_page(email_address = email_address)
+            mhresources(email_address=email_address)
+        elif choice == "4":
+            update_account_page(email_address=email_address)
         else:
-            print("Please choose a valid option '1' , '2', '3', or 'X'")
+            print("Please choose a valid option '1' , '2', '3', '4', or 'X'")
 def gp_page():
     print("=" * 80)
     print("GP HOMEPAGE".center(80))
