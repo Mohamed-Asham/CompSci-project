@@ -1,7 +1,7 @@
  #======================MHWP Functions======================
 def add_patient_record():
     print("=" * 80)
-    print("ADD PATIENT RECORD".center(80))
+    print("MANAGE PATIENT RECORDS".center(80))
     print("\nEnter 'H' to return to the homepage\n")
 
     patient_email = input("Enter the patient's email: ").strip()
@@ -9,10 +9,15 @@ def add_patient_record():
         gp_page()
         return
 
-    if patient_email not in registered_users["patient"]:
-        print("Patient not found. Returning to GP Homepage.")
-        gp_page()
-        return
+    while True:
+        if patient_email not in registered_users["patient"]:
+            print("\nPatient not found.\n")
+            patient_email = input("Enter the patient's email: ").strip()
+            if patient_email.upper() == "H":
+                gp_page()
+                return
+        else:
+            break
 
     patient = registered_users["patient"][patient_email]
 

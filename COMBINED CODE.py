@@ -1,4 +1,4 @@
-
+import re
 #=======================Modules=============================
 from importlib import import_module
 from time import sleep
@@ -6,12 +6,18 @@ from sys import exit, executable
 from re import match
 from random import randint
 from datetime import datetime
-from json import load, dump
+from json import load, dump, JSONDecodeError
 from platform import system
-from os import path
+import os
 import subprocess
+
+import pandas
+import pyfiglet
+import tabulate
+import termcolor
+
 # List of required non-standard packages
-required_packages = ["pyfiglet", "termcolor"]
+required_packages = ["pyfiglet", "termcolor", "pandas", "tabulate"]
 def ensure_pip_installed():
     current_os = system()
     try:
@@ -153,6 +159,8 @@ def load_accounts():
                     details.setdefault("NHS_organ_donor", "Unknown")
                     details.setdefault("Address_Line_1", "Unknown")
                     details.setdefault("Address_Line_2", "Unknown")
+                    details.setdefault("conditions", [])
+                    details.setdefault("clinical_notes", "None")
                 else:
                     data[role][email] = {
                         "email": email,
@@ -164,7 +172,9 @@ def load_accounts():
                         "NHS_blood_donor": "Unknown",
                         "NHS_organ_donor": "Unknown",
                         "Address_Line_1": "Unknown",
-                        "Address_Line_2": "Unknown"
+                        "Address_Line_2": "Unknown",
+                        "conditions": [],
+                        "clinical_notes": "None"
                     }
 
         if "admin1@gmail.com" not in data["admin"]:
@@ -178,7 +188,9 @@ def load_accounts():
                 "NHS_blood_donor": "Unknown",
                 "NHS_organ_donor": "Unknown",
                 "Address_Line_1": "Unknown",
-                "Address_Line_2": "Unknown"
+                "Address_Line_2": "Unknown",
+                "conditions": [],
+                "clinical_notes": "None"
             }
             save_accounts(data)
 
@@ -196,7 +208,9 @@ def load_accounts():
                     "NHS_blood_donor": "Unknown",
                     "NHS_organ_donor": "Unknown",
                     "Address_Line_1": "Unknown",
-                    "Address_Line_2": "Unknown"
+                    "Address_Line_2": "Unknown",
+                    "conditions": [],
+                    "clinical_notes": "None"
                 }},
             "admin": {
                 "admin1@gmail.com": {
@@ -209,7 +223,9 @@ def load_accounts():
                     "NHS_blood_donor": "Unknown",
                     "NHS_organ_donor": "Unknown",
                     "Address_Line_1": "Unknown",
-                    "Address_Line_2": "Unknown"
+                    "Address_Line_2": "Unknown",
+                    "conditions": [],
+                    "clinical_notes": "None"
                 }}}
         # Save the default data to accounts.json
         save_accounts(default_data)
@@ -260,6 +276,19 @@ def save_accounts(new_account=None, mode="merge"):
                     else:
                         # Add new account
                         combined_accounts[role][email] = details
+
+                    # Ensure all required keys are in the account details
+                    combined_accounts[role][email].setdefault("name", "Unknown")
+                    combined_accounts[role][email].setdefault("surname", "Unknown")
+                    combined_accounts[role][email].setdefault("date_of_birth", "Unknown")
+                    combined_accounts[role][email].setdefault("gender", "Unknown")
+                    combined_accounts[role][email].setdefault("NHS_blood_donor", "Unknown")
+                    combined_accounts[role][email].setdefault("NHS_organ_donor", "Unknown")
+                    combined_accounts[role][email].setdefault("Address_Line_1", "Unknown")
+                    combined_accounts[role][email].setdefault("Address_Line_2", "Unknown")
+                    combined_accounts[role][email].setdefault("conditions", [])
+                    combined_accounts[role][email].setdefault("clinical_notes", "None")
+
     if mode == "overide":
         combined_accounts = new_account
 
@@ -466,9 +495,9 @@ def update_account_page(email_address):
                 print("[ 1 ] Yes")
                 print("[ 2 } No")
                 donor_new = input("Please choose an option: ").strip()
-                if donor_new_option == "1":
+                if donor_new == "1":
                     donor_new = "IS Blood donor"
-                elif donor_new_option == "2":
+                elif donor_new == "2":
                     donor_new = "NOT Blood donor"
                 else:
                     print("Invalid choice, Please choose 1 or 2")
@@ -568,7 +597,213 @@ def update_account_page(email_address):
 
 
 #=======================GP Homepage========================
-#....
+# [ 1 ] View schedule
+# [ 2 ] Manage appointments
+# [ 3 ] Manage patient records
+ACCOUNTS_FILE = "accounts.json"
+MEDICAL_RECORDS_FILE = "medical_records.json"
+
+# Function to load the accounts from the accounts.json file
+def load_accounts():
+    if os.path.exists(ACCOUNTS_FILE):
+        with open(ACCOUNTS_FILE, "r") as file:
+            try:
+                return load(file)  # Load existing account data
+            except JSONDecodeError:
+                return {}  # Return empty dictionary if JSON is corrupted or empty
+    else:
+        return {}  # Return empty dictionary if the file doesn't exist
+
+# Function to load or initialize medical records
+def load_or_initialize_records():
+    if os.path.exists(MEDICAL_RECORDS_FILE):
+        with open(MEDICAL_RECORDS_FILE, "r") as file:
+            try:
+                # Try loading existing medical records
+                return load(file)
+            except JSONDecodeError:
+                # If the file is empty or corrupted, initialize it
+                accounts = load_accounts()  # Assume load_accounts() returns the accounts data
+                data_default = {"note": "", "date_created": None}
+                records = {}  # Create a dictionary for the medical records
+
+                # Populate medical records for patients only
+                for role, account_data in accounts.items():
+                    if role == "patient":
+                        for email in account_data.keys():
+                            records[email] = [data_default]
+
+                # Write the initialized records to the file
+                with open(MEDICAL_RECORDS_FILE, "w") as file_1:
+                    dump(records, file_1, indent=4)
+
+                return records  # Return the newly created records
+    else:
+        # If the file doesn't exist, initialize a new file
+        accounts = load_accounts()
+        data_default = {"note": "", "date_created": None}
+        records = {}
+
+        # Populate medical records for patients only
+        for role, account_data in accounts.items():
+            if role == "patient":
+                for email in account_data.keys():
+                    records[email] = [data_default]
+
+        # Write to a new file
+        with open(MEDICAL_RECORDS_FILE, "w") as file:
+            dump(records, file, indent=4)
+
+        return records
+
+# Function to save medical records to the JSON file
+def save_medical_records(records):
+    try:
+        with open(MEDICAL_RECORDS_FILE, "w") as file:
+            dump(records, file, indent=4)  # Save with indentation for readability
+    except Exception as e:
+        print(f"Error saving medical records: {e}")
+
+# Function to add or update clinical notes for a patient
+def add_clinical_note(email, note):
+    # Get the current timestamp for the note
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Format as: YYYY-MM-DD HH:MM:SS
+
+    # Create a new note entry with the timestamp
+    note_entry = {
+        "note": note,
+        "date_created": timestamp
+    }
+
+    # Load current medical records
+    medical_records = load_or_initialize_records()
+
+    if medical_records[email][0]["note"] == "" and medical_records[email][0]["date_created"] is None:
+        medical_records[email][0] = note_entry
+        with open(MEDICAL_RECORDS_FILE, "w") as file:
+            dump(medical_records, file, indent=4)
+
+    else:
+        medical_records[email].append(note_entry)
+
+
+    # Save the updated medical records
+    save_medical_records(medical_records)
+
+def add_patient_record():
+    print("=" * 80)
+    print("EDIT PATIENT RECORDS".center(80))
+    print("\nEnter 'H' to return to the homepage or R to view other patient records\n")
+
+    patient_email = input("Enter the patient's email: ").strip()
+    if patient_email.upper() == "H":
+        gp_page()
+        return
+    elif patient_email.upper() == "R":
+        display_patient_records()
+
+    registered_users = load_accounts()
+    while True:
+        if patient_email not in registered_users["patient"]:
+            print("\nPatient not found.\n")
+            patient_email = input("Enter the patient's email: ").strip()
+            if patient_email.upper() == "H":
+                gp_page()
+                return
+        else:
+            break
+
+    note_1 = input("Enter the clinical note: ")
+
+    add_clinical_note(patient_email, note_1)
+
+
+
+
+    print("\nPatient record updated successfully.")
+    sleep(2)
+    gp_page()
+
+def display_patient_records():
+    print("=" * 80)
+    print("ALL PATIENTS".center(80), "\n")
+
+
+    # Load the JSON file
+    with open('accounts.json', 'r') as file:
+
+        database = load(file)
+        ptnt_table = [{"Name": patient["name"],
+                    "Surname": patient["surname"],
+                    "Birthdate": patient["date_of_birth"],
+                    "Email address": patient["email"]
+                       }
+                   for patient in database["patient"].values()
+                    ]
+        df_1 = pandas.DataFrame(ptnt_table)
+
+        # Display the table using tabulate
+        print(tabulate.tabulate(df_1.values, headers=df_1.columns, tablefmt="grid"))
+
+        while True:
+            ptn_email_add = input("\nEnter a patient's email address to view their record or M to return to main menu: ").strip()
+            if ptn_email_add == "M":
+                gp_page()
+            elif ptn_email_add not in database["patient"]:
+                print("\nEmail is not in the register!")
+            else:
+                print("\n")
+                break
+
+        patient_data = [{"Name": database["patient"][ptn_email_add]["name"],
+                    "Surname": database["patient"][ptn_email_add]["surname"],
+                    "Birthdate": database["patient"][ptn_email_add]["date_of_birth"],
+                    "Conditions": ", ".join(database["patient"][ptn_email_add]["conditions"])
+                         }
+                        ]
+        df_2 = pandas.DataFrame(patient_data)
+        print(tabulate.tabulate(df_2.values, headers=df_2.columns, tablefmt="grid"))
+
+
+        # Convert the JSON data to a list of dictionaries for the DataFrame
+        medical_records = load_or_initialize_records()
+
+        if isinstance(medical_records[ptn_email_add][0], list):
+            print("Nested list detected! Fix the structure.")
+            medical_records[ptn_email_add] = medical_records[ptn_email_add][0]
+        data = [
+            {
+                "Date": item["date_created"],
+                "Clinical Notes": item["note"]
+            }
+            for item in medical_records[ptn_email_add]
+        ]
+
+    # Create DataFrame
+    df = pandas.DataFrame(data)
+
+    # Display the table using tabulate
+    print(tabulate.tabulate(df.values, headers=df.columns, tablefmt="grid"))
+
+
+
+# Next step after seeing patient records
+    while True:
+        print("\n")
+        print("[ 1 ] Edit patient records")
+        print("[ M ] Return to main menu ")
+
+        choice_1 = input("Please choose an option: ").strip()
+        if choice_1 == "1":
+            add_patient_record()
+            return
+        elif choice_1.upper() == "M":
+            gp_page()
+        else:
+            print("Invalid input, please choose between: 1 or M")
+# [ 4 ] Check in/out patients
+# [ 5 ] Change patient details
+# [ X ] Logout
 #==========================================================
 
 
@@ -619,8 +854,7 @@ def gp_page():
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            display_patient_records()
         elif choice == "4":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
@@ -892,7 +1126,8 @@ def registering_user():
     sleep(1)
 class Accounts:
     def __init__(self, email, a_password, name, surname, date_of_birth, gender,
-                 job_role, nhs_blood_donor=None, nhs_organ_donor=None, address_line_1="Unknown", address_line_2="Unknown" ):
+                 job_role, nhs_blood_donor=None, nhs_organ_donor=None, address_line_1="Unknown", address_line_2="Unknown",
+                 conditions=None):
         self.email = email
         self.password = a_password
         self.name = name
@@ -904,6 +1139,7 @@ class Accounts:
         self.NHS_organ_donor = nhs_organ_donor or "Unknown"
         self.Address_Line_1 = address_line_1
         self.Address_Line_2 = address_line_2
+        self.conditions = conditions if conditions is not None else []
 
         self.add_to_role_accounts()
 
@@ -911,14 +1147,16 @@ class Accounts:
         user_details = {
             "email": self.email,
             "password": self.password,
-            "name": self.name,
-            "surname": self.surname,
-            "date_of_birth": self.date_of_birth,
-            "gender": self.gender,
-            "NHS_blood_donor": self.NHS_blood_donor,
-            "NHS_organ_donor": self.NHS_organ_donor,
-            "Address_Line_1": self.Address_Line_1,
-            "Address_Line_2": self.Address_Line_2
+            "name": self.name or "Unknown",
+            "surname": self.surname or "Unknown",
+            "date_of_birth": self.date_of_birth or "Unknown",
+            "gender": self.gender or "Unknown",
+            "NHS_blood_donor": self.NHS_blood_donor or "Unknown",
+            "NHS_organ_donor": self.NHS_organ_donor or "Unknown",
+            "Address_Line_1": self.Address_Line_1 or "Unknown",
+            "Address_Line_2": self.Address_Line_2 or "Unknown",
+            "conditions": [],
+            "clinical_notes": "None"
         }
 
         # Add to the appropriate role in registered_users
