@@ -155,6 +155,7 @@ def load_accounts():
                     details.setdefault("NHS_organ_donor", "Unknown")
                     details.setdefault("Address_Line_1", "Unknown")
                     details.setdefault("Address_Line_2", "Unknown")
+                    details.setdefault("journals", [])
                     details.setdefault("conditions", [])
                     details.setdefault("clinical_notes", "None")
                 else:
@@ -282,10 +283,11 @@ def save_accounts(new_account=None, mode="merge"):
                     combined_accounts[role][email].setdefault("NHS_organ_donor", "Unknown")
                     combined_accounts[role][email].setdefault("Address_Line_1", "Unknown")
                     combined_accounts[role][email].setdefault("Address_Line_2", "Unknown")
+                    combined_accounts[role][email].setdefault("journals", "Unknown")
                     combined_accounts[role][email].setdefault("conditions", [])
                     combined_accounts[role][email].setdefault("clinical_notes", "None")
 
-    if mode == "overide":
+    if mode == "override":
         combined_accounts = new_account
 
     try:
@@ -331,7 +333,7 @@ def delete_accounts():
     print("\nEnter 'H' to return to the homepage\n")
 
     while True:
-        choice = input("Enter the numeber of the account to delete: ").strip()
+        choice = input("Enter the number of the account to delete: ").strip()
         if choice.upper() == "H":
             admins_page()
             return
@@ -354,7 +356,7 @@ def delete_accounts():
                 f"Confirm deletion of account [ {numbers} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
             if confirming_option == "Y":
                 del registered_users[role][email_to_delete]
-                save_accounts(registered_users, mode="overide")
+                save_accounts(registered_users, mode="override")
                 print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
                 sleep(2)
                 print("\nUpdated Accounts:")
@@ -482,7 +484,7 @@ def update_account_page(email_address):
         print("These are your current account details:\n")
         counter = 1
         for key, value in account_details.items():
-            if key != "password":
+            if key != "password" and key!= "journals":
                 print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
                 counter += 1
         print("[ 0 ]  Exit to Homepage ")
@@ -519,7 +521,23 @@ def update_account_page(email_address):
                     break
 
 
-                elif re.match(email_pattern,new_email):
+                elif match(email_pattern,new_email):
+
+                    reset_code = str(randint(100000, 999999))
+                    print(f"To verify the new email address, a verification code will be sent to the email. Simulated reset code {new_email}: {reset_code}")
+
+                    for attempt in range(4):
+                        user_code = input("Enter the reset code sent to your email: ")
+                        if user_code == reset_code:
+                            break
+                        else:
+                            print("Incorrect code. Please try again")
+                            if attempt == 3:
+                                print("Too many incorrect attempts. No change has been made to your account. Returning to your homepage...")
+                                sleep(2)
+                                patients_page(email_address)
+                                return
+
                     account_details["email"] = new_email
                     del data["patient"][email_address]
                     data["patient"][new_email] = account_details
@@ -619,10 +637,10 @@ def update_account_page(email_address):
                 print("NHS blood donor:")
                 print("[ 1 ] Yes")
                 print("[ 2 } No")
-                donor_new_option = input("Please choose an option: ").strip()
-                if donor_new_option == "1":
+                donor_new = input("Please choose an option: ").strip()
+                if donor_new == "1":
                     donor_new = "IS Blood donor"
-                elif donor_new_option == "2":
+                elif donor_new == "2":
                     donor_new = "NOT Blood donor"
                 else:
                     print("Invalid choice, Please choose 1 or 2")
@@ -729,7 +747,7 @@ def update_account_page(email_address):
         print("Updated account details:")
         print("")
         for key,value in account_details.items():
-            if key!= "password":
+            if key!= "password" and key!= "journals":
                 print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
 
         print("\n")
@@ -741,6 +759,86 @@ def update_account_page(email_address):
             break
         elif edit_again!= "y":
             print("Invalid input, returning to the edit menu")
+
+
+
+
+def journal_page(email_address):
+    while True:
+        print("="* 80)
+        print("JOURNALS PAGE".center(80))
+        print("[1] View previous entries")
+        print("[2] Make a new journal entry")
+        print("[H] Return to your homepage")
+        choice= input("\nPlease select an option: ").strip().upper()
+        if choice == "1":
+            view_journal_entries(email_address)
+        elif choice == "2":
+            new_journal_entry(email_address)
+        elif choice == "H":
+            print("Returning to your homepage...")
+            sleep(1)
+            patients_page(email_address)
+            break
+        else:
+            print("Invalid choice, please select '1', '2' or 'H' ")
+
+
+
+
+def new_journal_entry(email_address):
+    print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
+    entry_line = []
+    while True:
+        line = input()
+        if line.strip().upper() == "SAVE":
+            break
+        else:
+            entry_line.append(line)
+    entry_text = "\n".join(entry_line)
+    if not entry_text.strip():
+        print("Empty journal entry. Not saved")
+        return
+
+    entry_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data=load_accounts()
+    patient_account = data["patient"][email_address]
+    journal_entry = {
+        "date": entry_date,
+        "entry": entry_text
+    }
+
+    if 'journals' not in patient_account:
+        patient_account['journals'] = []
+    patient_account['journals'].append(journal_entry)
+
+
+    save_accounts(data, mode= 'override')
+
+    print("Your journal entry has been saved")
+    print("Returning to your journals page... ")
+    sleep(1)
+    journal_page(email_address)
+
+
+def view_journal_entries(email_address):
+    data=load_accounts()
+    patient_account= data["patient"][email_address]
+    journals = patient_account.get("journals", [] )
+    if not journals:
+        print("\nYou have no journal entries. ")
+        return
+    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
+
+    print("\nYour Journal Entries:")
+    for idx, journal in enumerate(journals_sorted, start=1):
+        print(f"\nEntry {idx} - Date: {journal['date']}")
+        print("-" * 40)
+        print(journal['entry'])
+        print("-" * 40)
+
+
+
 #==========================================================
 
 
@@ -981,8 +1079,10 @@ def patients_page(email_address):
             mhresources(email_address=email_address)
         elif choice == "4":
             update_account_page(email_address=email_address)
+        elif choice == "5":
+            journal_page(email_address)
         else:
-            print("Please choose a valid option '1' , '2', '3', '4', or 'X'")
+            print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
 def gp_page():
     print("=" * 80)
     print("GP HOMEPAGE".center(80))
