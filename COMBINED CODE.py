@@ -373,8 +373,7 @@ def delete_accounts():
 #[ 1 ] Book and manage appointments
 #[ 2 ] Change default GP
 #[ 3 ] Access meditation help & tips and more
-#[ 4 ] Change account details
-#[ X ] Logout
+
 # Dictionary containing resources for different categories
 resources = {
     "Breathing Practices": {
@@ -471,6 +470,7 @@ def post_selection(category_name, email_address):
         else:
             print("Invalid input. Please enter a valid option.")
 
+#[ 4 ] Change account details
 
 def update_account_page(email_address):
     data = load_accounts()
@@ -741,6 +741,10 @@ def update_account_page(email_address):
             break
         elif edit_again!= "y":
             print("Invalid input, returning to the edit menu")
+
+#[ X ] Logout
+
+# login_menu()
 #==========================================================
 
 
