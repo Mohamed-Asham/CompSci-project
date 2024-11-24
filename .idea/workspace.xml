@@ -58,7 +58,7 @@
     "Python.mental_health_resources.executor": "Run",
     "Python.myproject.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "Merging main"
+    "git-widget-placeholder": "main"
   }
 }]]></component>
   <component name="RunManager">

@@ -760,9 +760,6 @@ def update_account_page(email_address):
         elif edit_again!= "y":
             print("Invalid input, returning to the edit menu")
 
-
-
-
 def journal_page(email_address):
     while True:
         print("="* 80)
@@ -783,9 +780,7 @@ def journal_page(email_address):
         else:
             print("Invalid choice, please select '1', '2' or 'H' ")
 
-
-
-
+# [ 5 ] Access journal entries
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
     entry_line = []
@@ -820,7 +815,6 @@ def new_journal_entry(email_address):
     sleep(1)
     journal_page(email_address)
 
-
 def view_journal_entries(email_address):
     data=load_accounts()
     patient_account= data["patient"][email_address]
@@ -836,9 +830,6 @@ def view_journal_entries(email_address):
         print("-" * 40)
         print(journal['entry'])
         print("-" * 40)
-
-
-
 
 #[ X ] Logout
 
@@ -1054,6 +1045,7 @@ def display_patient_records():
 # [ 4 ] Check in/out patients
 # [ 5 ] Change patient details
 # [ X ] Logout
+# main_menu()
 #==========================================================
 
 
