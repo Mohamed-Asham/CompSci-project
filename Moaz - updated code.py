@@ -1,5 +1,5 @@
 import re
-# =======================Modules=============================
+#=======================Modules=============================
 from importlib import import_module
 from time import sleep
 from sys import exit, executable
@@ -11,10 +11,9 @@ from platform import system
 import os
 import subprocess
 
+
 # List of required non-standard packages
 required_packages = ["pyfiglet", "termcolor", "pandas", "tabulate"]
-
-
 def ensure_pip_installed():
     current_os = system()
     try:
@@ -39,8 +38,6 @@ def ensure_pip_installed():
         except subprocess.CalledProcessError as e:
             print(f"Failed to install pip: {e}")
             exit(1)
-
-
 def install_modules():
     def install_and_import(package):
         try:
@@ -54,21 +51,21 @@ def install_modules():
             if current_os == "Windows":
                 # Command for Windows
                 process = subprocess.run(f'cmd /c "py -m pip install {package}"',
-                                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             elif current_os == "Darwin":
                 # Command for macOS
                 process = subprocess.run(f'python3 -m pip install {package}',
-                                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             else:
                 # For other Unix-like systems
                 process = subprocess.run(f'python3 -m pip install {package}',
-                                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            # --------------OPTIONAL Prints the installation process output or errors ----------
+                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            #--------------OPTIONAL Prints the installation process output or errors ----------
             # print("Standard Output:")
             # print(process.stdout)
             # print("Standard Error (if any):")
             # print(process.stderr)
-            # ---------------------------------------------------------------------------------
+            #---------------------------------------------------------------------------------
             if process.returncode != 0:
                 print(f"Error installing '{package}'. Exiting.")
                 exit(1)
@@ -80,33 +77,28 @@ def install_modules():
 
     for packageS in required_packages:
         install_and_import(packageS)
-
-
 def uninstall_modules():
     for package in required_packages:
         print(f"Uninstalling '{package}'...")
         current_os = system()
         if current_os == "Windows":
             process = subprocess.run(f'cmd /c "py -m pip uninstall {package}"',
-                                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         else:
             process = subprocess.run(f'{executable} -m pip uninstall {package}',
-                                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
 
         if process.returncode == 0:
             print(f"Successfully uninstalled '{package}'.")
         else:
             print(f"Error uninstalling '{package}':")
             print(process.stderr)
+#==========================================================
 
 
-# ==========================================================
-
-
-# ====================Header Display========================
+#====================Header Display========================
 def header():
-    fig = pyfiglet.Figlet(font="dos_rebel", width=80,
-                          justify="center")  # List of optional fonts: big_money-ne, big_money-nw, ansi_regular
+    fig = pyfiglet.Figlet(font="dos_rebel", width=80, justify="center")  # List of optional fonts: big_money-ne, big_money-nw, ansi_regular
     title_art = fig.renderText("Breeeze")
     tagline = "Empowering your mental health journey"
 
@@ -127,19 +119,15 @@ def header():
     welcome_message = f"{left_padding} {tagline} {right_padding}"
 
     print("=" * line_width)
-    print(termcolor.colored(title_art_no_padding, "cyan"))  # If you want to change color change here.
+    print(termcolor.colored(title_art_no_padding, "cyan"))     #If you want to change color change here.
     print("=" * line_width)
-    print(termcolor.colored(welcome_message, "yellow"))  # If you want to change color change here.
+    print(termcolor.colored(welcome_message, "yellow"))        #If you want to change color change here.
     print(f"{"=" * line_width}\n")
-
-
 # =========================================================
 
 
-# ======================Database============================
+#======================Database============================
 DATA_FILE = "accounts.json"
-
-
 def load_accounts():
     try:
         with open(DATA_FILE, "r") as file:
@@ -208,19 +196,19 @@ def load_accounts():
         default_data = {
             "patient": {},
             "gp": {"gp1@gmail.com": {
-                "email": "gp1@gmail.com",
-                "password": "password1",
-                "name": "Unknown",
-                "surname": "Unknown",
-                "date_of_birth": "Unknown",
-                "gender": "Unknown",
-                "NHS_blood_donor": "Unknown",
-                "NHS_organ_donor": "Unknown",
-                "Address_Line_1": "Unknown",
-                "Address_Line_2": "Unknown",
-                "conditions": [],
-                "clinical_notes": "None"
-            }},
+                    "email": "gp1@gmail.com",
+                    "password": "password1",
+                    "name": "Unknown",
+                    "surname": "Unknown",
+                    "date_of_birth": "Unknown",
+                    "gender": "Unknown",
+                    "NHS_blood_donor": "Unknown",
+                    "NHS_organ_donor": "Unknown",
+                    "Address_Line_1": "Unknown",
+                    "Address_Line_2": "Unknown",
+                    "conditions": [],
+                    "clinical_notes": "None"
+                }},
             "admin": {
                 "admin1@gmail.com": {
                     "email": "admin1@gmail.com",
@@ -256,8 +244,6 @@ def load_accounts():
                 "gp": {},
                 "admin": {}
             }
-
-
 def save_accounts(new_account=None, mode="merge"):
     combined_accounts = {}
 
@@ -310,15 +296,11 @@ def save_accounts(new_account=None, mode="merge"):
             dump(combined_accounts, file, indent=4)
     except Exception as e:
         print(f"Error saving accounts: {e}")
-
-
 registered_users = load_accounts()
+#==========================================================
 
 
-# ==========================================================
-
-
-# ======================Admin Homepage======================
+#======================Admin Homepage======================
 def display_all_accounts():
     print("=" * 80)
     print("ALL ACCOUNTS".center(80))
@@ -346,8 +328,6 @@ def display_all_accounts():
     print(f"\n{"=" * 80}")
 
     return account_mapping
-
-
 def delete_accounts():
     account_mapping = display_all_accounts()
     print("\nEnter 'H' to return to the homepage\n")
@@ -386,18 +366,16 @@ def delete_accounts():
             else:
                 print("Invalid input. Please confirm with 'Y' or 'N'")
 
+#other functions...
+#==========================================================
 
-# other functions...
-# ==========================================================
 
+#====================Patient Homepage======================
 
-# ====================Patient Homepage======================
+#[ 1 ] Book and manage appointments
+#[ 2 ] Change default GP
+#[ 3 ] Access meditation help & tips and more
 
-# [ 1 ] Book and manage appointments
-# [ 2 ] Change default GP
-# [ 3 ] Access meditation help & tips and more
-# [ 4 ] Change account details
-# [ X ] Logout
 # Dictionary containing resources for different categories
 resources = {
     "Breathing Practices": {
@@ -406,35 +384,24 @@ resources = {
         3: ("10 minute breathing practice", "https://drive.google.com/file/d/1hGEntCirailnpjSlX4ZgGVbmd-qAQHr8/view"),
     },
     "Help with Sleep": {
-        1: ("Guided Imagery for Sleep by Dan Guerra",
-            "https://insighttimer.com/danguerra/guided-meditations/guided-imagery-for-sleep-3"),
-        2: ("Progressive Relaxation Nidra by Ally Boothroyd",
-            "https://insighttimer.com/allyboothroyd/guided-meditations/progressive-relaxation-nidra"),
-        3: ("Guided Meditation For Deep Sleep by Daphne Lyon",
-            "https://insighttimer.com/daphnelyon/guided-meditations/guided-meditation-for-deep-sleep-4"),
-        4: ("A Guided Visualization Meditation For Deep & Restful Sleep",
-            "https://insighttimer.com/movie123man/guided-meditations/a-guided-visualization-meditation-for-deep-and-restful-sleep"),
+        1: ("Guided Imagery for Sleep by Dan Guerra", "https://insighttimer.com/danguerra/guided-meditations/guided-imagery-for-sleep-3"),
+        2: ("Progressive Relaxation Nidra by Ally Boothroyd", "https://insighttimer.com/allyboothroyd/guided-meditations/progressive-relaxation-nidra"),
+        3: ("Guided Meditation For Deep Sleep by Daphne Lyon", "https://insighttimer.com/daphnelyon/guided-meditations/guided-meditation-for-deep-sleep-4"),
+        4: ("A Guided Visualization Meditation For Deep & Restful Sleep", "https://insighttimer.com/movie123man/guided-meditations/a-guided-visualization-meditation-for-deep-and-restful-sleep"),
     },
     "Help with Anxiety": {
-        1: ("Decrease Anxiety & Increase Peace by Andrea Wachter",
-            "https://insighttimer.com/andreawachter/guided-meditations/decrease-anxiety-and-increase-peace"),
-        2: ("Guided Meditation For Anxiety Relief by Elisa (Ellie) Bozmarova",
-            "https://insighttimer.com/elliebozmarova/guided-meditations/guided-meditation-for-anxiety-relief"),
+        1: ("Decrease Anxiety & Increase Peace by Andrea Wachter", "https://insighttimer.com/andreawachter/guided-meditations/decrease-anxiety-and-increase-peace"),
+        2: ("Guided Meditation For Anxiety Relief by Elisa (Ellie) Bozmarova", "https://insighttimer.com/elliebozmarova/guided-meditations/guided-meditation-for-anxiety-relief"),
     },
     "Gratitude": {
-        1: ("Five-Minute Morning Practice On Gratitude by Julie Ela Grace",
-            "https://insighttimer.com/julieelagrace/guided-meditations/five-minute-morning-meditation-on-gratitude"),
-        2: ("Gratitude Affirmations For The Body And Life by Julie Ela Grace",
-            "https://insighttimer.com/julieelagrace/guided-meditations/gratitude-affirmations-for-the-body-and-life"),
+        1: ("Five-Minute Morning Practice On Gratitude by Julie Ela Grace", "https://insighttimer.com/julieelagrace/guided-meditations/five-minute-morning-meditation-on-gratitude"),
+        2: ("Gratitude Affirmations For The Body And Life by Julie Ela Grace", "https://insighttimer.com/julieelagrace/guided-meditations/gratitude-affirmations-for-the-body-and-life"),
     },
     "Stress & Burnout": {
-        1: ("Quick Stress Release by Saqib Rizvi",
-            "https://insighttimer.com/saqibrizvi/guided-meditations/quick-stress-release"),
-        2: ("Relief From Stress & Pressure by Mary Maddux",
-            "https://insighttimer.com/meditationoasis/guided-meditations/relief-from-stress-and-pressure"),
+        1: ("Quick Stress Release by Saqib Rizvi", "https://insighttimer.com/saqibrizvi/guided-meditations/quick-stress-release"),
+        2: ("Relief From Stress & Pressure by Mary Maddux", "https://insighttimer.com/meditationoasis/guided-meditations/relief-from-stress-and-pressure"),
     },
 }
-
 
 def mhresources(email_address):
     """Function to display the main menu and navigate categories."""
@@ -459,7 +426,6 @@ def mhresources(email_address):
                 print("Invalid input. Please choose a valid category number.")
         except ValueError:
             print("Invalid input. Please enter a number.")
-
 
 def category_menu(category_name, email_address):
     """Function to display links for the selected category."""
@@ -487,7 +453,6 @@ def category_menu(category_name, email_address):
         except ValueError:
             print("Invalid input. Please enter a number.")
 
-
 def post_selection(category_name, email_address):
     """Function to follow up after a resource selection."""
     print("\nWe hope this resource was helpful.")
@@ -507,6 +472,7 @@ def post_selection(category_name, email_address):
         else:
             print("Invalid input. Please enter a valid option.")
 
+#[ 4 ] Change account details
 
 def update_account_page(email_address):
     data = load_accounts()
@@ -518,25 +484,28 @@ def update_account_page(email_address):
         print("These are your current account details:\n")
         counter = 1
         for key, value in account_details.items():
-            if key != "password" and key != "journals" and key != "conditions" and key != "clinical_notes":
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
                 print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
                 counter += 1
         print("[ 0 ]  Exit to Homepage ")
         print("\n")
 
+
         update_option = input("Please select an option to edit: ").strip()
-        if (update_option.isdigit() and 0 <= int(update_option) <= 9):
+        if (update_option.isdigit() and 0 <= int(update_option) <= 9) :
             update_option = int(update_option)
         else:
             print("\n")
             print("Invalid input. Please choose a valid option")
             continue
 
+
         if update_option == 0:
             print("Returning to your homepage...")
             sleep(1)
             patients_page(email_address)
             break
+
 
         if update_option == 1:
             while True:
@@ -552,11 +521,10 @@ def update_account_page(email_address):
                     break
 
 
-                elif match(email_pattern, new_email):
+                elif match(email_pattern,new_email):
 
                     reset_code = str(randint(100000, 999999))
-                    print(
-                        f"To verify the new email address, a verification code will be sent to the email. Simulated reset code {new_email}: {reset_code}")
+                    print(f"To verify the new email address, a verification code will be sent to the email. Simulated reset code {new_email}: {reset_code}")
 
                     for attempt in range(4):
                         user_code = input("Enter the reset code sent to your email: ")
@@ -565,8 +533,7 @@ def update_account_page(email_address):
                         else:
                             print("Incorrect code. Please try again")
                             if attempt == 3:
-                                print(
-                                    "Too many incorrect attempts. No change has been made to your account. Returning to your homepage...")
+                                print("Too many incorrect attempts. No change has been made to your account. Returning to your homepage...")
                                 sleep(2)
                                 patients_page(email_address)
                                 return
@@ -574,8 +541,8 @@ def update_account_page(email_address):
                     account_details["email"] = new_email
                     del data["patient"][email_address]
                     data["patient"][new_email] = account_details
-                    email_address = new_email
-                    updates_made = True
+                    email_address= new_email
+                    updates_made=True
                     break
                 else:
                     print("Invalid email format. Please enter a valid email.")
@@ -584,8 +551,7 @@ def update_account_page(email_address):
             new_first_name = input("Please enter your new first name: ").strip()
             if new_first_name != account_details["name"]:
                 while True:
-                    final_confirmation = input(
-                        "Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
                     if final_confirmation == "y":
                         account_details["name"] = new_first_name
                         updates_made = True
@@ -608,8 +574,7 @@ def update_account_page(email_address):
             new_surname = input("Please enter your new surname").strip()
             if new_surname != account_details["surname"]:
                 while True:
-                    final_confirmation = input(
-                        "Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
                     if final_confirmation == "y":
                         account_details["surname"] = new_surname
                         updates_made = True
@@ -633,9 +598,9 @@ def update_account_page(email_address):
                 if new_birthday != account_details["date_of_birth"]:
                     try:
                         day, month, year = map(int, new_birthday.split("/"))
-                        datetime(year, month, day)
+                        datetime(year,month,day)
                         account_details["date_of_birth"] = new_birthday
-                        updates_made = True
+                        updates_made= True
                         break
                     except ValueError:
                         print("Invalid birth date. Please enter in the format DD/MM/YYYY.")
@@ -660,7 +625,7 @@ def update_account_page(email_address):
 
                 if new_gender != account_details["gender"]:
                     account_details["gender"] = new_gender
-                    updates_made = True
+                    updates_made= True
                     break
                 else:
                     print("Please choose a valid option '1' or '2' ")
@@ -705,9 +670,10 @@ def update_account_page(email_address):
                     print("Invalid choice. Please choose 1 or 2")
                     continue
 
+
                 if organ_new != account_details["NHS_organ_donor"]:
                     account_details["NHS_organ_donor"] = organ_new
-                    updates_made = True
+                    updates_made= True
                     break
                 else:
                     print("This is already your current NHS organ donor status")
@@ -719,8 +685,7 @@ def update_account_page(email_address):
             ad1_new = input("Please enter a new Address Line 1 ")
             if ad1_new != account_details["Address_Line_1"]:
                 while True:
-                    final_confirmation = input(
-                        "Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
                     if final_confirmation == "y":
                         account_details["Address_Line_1"] = ad1_new
                         updates_made = True
@@ -742,8 +707,7 @@ def update_account_page(email_address):
             ad2_new = input("Please enter a new Address Line 2 ")
             if ad2_new != account_details["Address_Line_2"]:
                 while True:
-                    final_confirmation = input(
-                        "Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
                     if final_confirmation == "y":
                         account_details["Address_Line_2"] = ad2_new
                         updates_made = True
@@ -763,10 +727,12 @@ def update_account_page(email_address):
             print("Invalid option")
             continue
 
+
+
         if updates_made:
-            data["patient"][email_address] = account_details
-            with open("accounts.json", "w") as file:
-                dump(data, file, indent=4)
+            data["patient"][email_address]= account_details
+            with open("accounts.json","w") as file:
+                dump(data , file ,indent=4)
             print("Updating your account details...")
             sleep(1)
             print("Your changes have been saved successfully!")
@@ -780,36 +746,32 @@ def update_account_page(email_address):
         print("--------------------------------------------------------------------------------")
         print("Updated account details:")
         print("")
-        for key, value in account_details.items():
-            if key != "password" and key != "journals" and key != "conditions" and key != "clinical_notes":
+        for key,value in account_details.items():
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
                 print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
 
         print("\n")
-        edit_again = input("Would you like to eit another detail? (Y/N): ").strip().lower()
+        edit_again= input("Would you like to eit another detail? (Y/N): ").strip().lower()
         if edit_again == "n":
             print("Returning to your homepage...")
             sleep(1)
             patients_page(email_address)
             break
-        elif edit_again != "y":
+        elif edit_again!= "y":
             print("Invalid input, returning to the edit menu")
-
 
 def journal_page(email_address):
     while True:
-        print("=" * 80)
+        print("="* 80)
         print("JOURNALS PAGE".center(80))
-        print("[ 1 ] Make a new journal entry")
-        print("[ 2 ] View previous journal entries")
-        print("[ 3 ] Edit previous journal entries")
+        print("[ 1 ] View previous entries")
+        print("[ 2 ] Make a new journal entry")
         print("[ H ] Return to your homepage")
-        choice = input("\nPlease select an option: ").strip().upper()
+        choice= input("\nPlease select an option: ").strip().upper()
         if choice == "1":
-            new_journal_entry(email_address)
-        elif choice == "2":
             view_journal_entries(email_address)
-        elif choice == "3":
-            edit_journal_entries(email_address)
+        elif choice == "2":
+            new_journal_entry(email_address)
         elif choice == "H":
             print("Returning to your homepage...")
             sleep(1)
@@ -818,7 +780,7 @@ def journal_page(email_address):
         else:
             print("Invalid choice, please select '1', '2' or 'H' ")
 
-
+# [ 5 ] Access journal entries
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
     entry_line = []
@@ -834,7 +796,7 @@ def new_journal_entry(email_address):
         return
 
     entry_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data = load_accounts()
+    data=load_accounts()
     patient_account = data["patient"][email_address]
     journal_entry = {
         "date": entry_date,
@@ -845,135 +807,42 @@ def new_journal_entry(email_address):
         patient_account['journals'] = []
     patient_account['journals'].append(journal_entry)
 
-    save_accounts(data, mode='override')
+
+    save_accounts(data, mode= 'override')
 
     print("Your journal entry has been saved")
     print("Returning to your journals page... ")
     sleep(1)
     journal_page(email_address)
 
-
 def view_journal_entries(email_address):
-    data = load_accounts()
-    patient_account = data["patient"][email_address]
-    journals = patient_account.get("journals", [])
+    data=load_accounts()
+    patient_account= data["patient"][email_address]
+    journals = patient_account.get("journals", [] )
     if not journals:
         print("\nYou have no journal entries. ")
-        while True:
-            new_journal = input("Would you like to write your first journal entry? (Y/N) ").strip().upper()
-            if new_journal == "Y":
-                new_journal_entry(email_address)
-                break
-            elif new_journal == "N":
-                print("Returning to your homepage...")
-                sleep(1)
-                patients_page(email_address)
-                break
-            else:
-                print("Invalid choice. Please choose either Y or N")
         return
     journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
 
-    print("Loading your previous journal entries...")
-    sleep(2)
     print("\nYour Journal Entries:")
     for idx, journal in enumerate(journals_sorted, start=1):
         print(f"\nEntry {idx} - Date: {journal['date']}")
         print("-" * 40)
         print(journal['entry'])
         print("-" * 40)
-        sleep(1)
-    while True:
-        new_journal = input("Would you like to add another journal entry? (Y/N) ").strip().upper()
-        if new_journal == "Y":
-            new_journal_entry(email_address)
-            break
-        elif new_journal == "N":
-            print("Returning to your homepage...")
-            sleep(1)
-            patients_page(email_address)
-            break
-        else:
-            print("Invalid choice. Please choose either Y or N")
+
+#[ X ] Logout
+
+# login_menu()
+#==========================================================
 
 
-def edit_journal_entries(email_address):
-    data = load_accounts()
-    patient_account = data["patient"][email_address]
-    journals = patient_account.get("journals", [])
-    if not journals:
-        print("\nYou have no journal entries to edit")
-        print("Returning to your journals page...")
-        sleep(2)
-        journal_page(email_address)
-        return
-
-    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
-    print("Fetching your previous journal entries...")
-    sleep(2)
-    print("Your Journal Entries: ")
-    for idx, journal in enumerate(journals_sorted, start=1):
-        print(f"\nEntry {idx} - Date: {journal['date']}")
-        print("-" * 40)
-        print(journal['entry'])
-        print("-" * 40)
-        sleep(1)
-
-    while True:
-        choice = input(
-            "\nEnter the number of the entry you wish to edit (or 'B' to go back to the journals page): ").strip()
-        if choice.upper() == "B":
-            print("Returning to your journals page...")
-            sleep(1)
-            journal_page(email_address)
-        try:
-            entry_num = int(choice)
-            if 1 <= entry_num <= len(journals_sorted):
-                break
-            else:
-                print("Invalid entry number.")
-        except ValueError:
-            print("Please enter a valid number.")
-
-    selected_journal = journals_sorted[entry_num - 1]
-
-    print("\nCurrent entry: \n")
-    print(selected_journal['entry'])
-
-    print("\nEnter your new journal entry. Type 'SAVE' on a new line to save your entry.")
-    new_entry_lines = []
-    while True:
-        line = input()
-        if line.strip().upper() == "SAVE":
-            break
-        else:
-            new_entry_lines.append(line)
-    new_entry_text = "\n".join(new_entry_lines)
-    if not new_entry_text.strip():
-        print("Empty journal entry. No changes made. ")
-        return
-    selected_journal['entry'] = new_entry_text
-    data["patient"][email_address]["journals"] = journals
-    save_accounts(data, mode="override")
-    print("Saving your changes..")
-    sleep(1)
-    print("Your journal entry has been updated.")
-    sleep(1)
-    print("Returning to your journals page...")
-    sleep(1)
-    journal_page(email_address)
-
-
-# ==========================================================
-
-
-# =======================GP Homepage========================
+#=======================GP Homepage========================
 # [ 1 ] View schedule
 # [ 2 ] Manage appointments
 # [ 3 ] Manage patient records
 ACCOUNTS_FILE = "accounts.json"
 MEDICAL_RECORDS_FILE = "medical_records.json"
-
 
 # Function to load the accounts from the accounts.json file
 def load_accounts2():
@@ -985,7 +854,6 @@ def load_accounts2():
                 return {}  # Return empty dictionary if JSON is corrupted or empty
     else:
         return {}  # Return empty dictionary if the file doesn't exist
-
 
 # Function to load or initialize medical records
 def load_or_initialize_records():
@@ -1029,7 +897,6 @@ def load_or_initialize_records():
 
         return records
 
-
 # Function to save medical records to the JSON file
 def save_medical_records(records):
     try:
@@ -1037,7 +904,6 @@ def save_medical_records(records):
             dump(records, file, indent=4)  # Save with indentation for readability
     except Exception as e:
         print(f"Error saving medical records: {e}")
-
 
 # Function to add or update clinical notes for a patient
 def add_clinical_note(email, note):
@@ -1061,9 +927,9 @@ def add_clinical_note(email, note):
     else:
         medical_records[email].append(note_entry)
 
+
     # Save the updated medical records
     save_medical_records(medical_records)
-
 
 def add_patient_record():
     print("=" * 80)
@@ -1075,7 +941,7 @@ def add_patient_record():
         gp_page()
         return
     elif patient_email.upper() == "R":
-        display_patient_records()
+        manage_patient_information()
 
     registered_users = load_accounts2()
     while True:
@@ -1092,34 +958,279 @@ def add_patient_record():
 
     add_clinical_note(patient_email, note_1)
 
+
+
+
     print("\nPatient record updated successfully.")
     sleep(2)
     gp_page()
 
+def view_patient_summary():
+    print("=" * 80)
+    print("VIEW PATIENT SUMMARY".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
+
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
+
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+
+    # Select a patient
+    while True:
+        selection = input("\nEnter the Index of the patient to view summary or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information()
+            return
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
+
+    # Display patient's non-medical records
+    patient_details = patients[patient_email]
+    summary_data = {
+        "Full Name": f"{patient_details.get('name', 'Unknown')} {patient_details.get('surname', 'Unknown')}",
+        "Date of Birth": patient_details.get("date_of_birth", "Unknown"),
+        "Gender": patient_details.get("gender", "Unknown"),
+        "Email": patient_email,
+        "Address Line 1": patient_details.get("Address_Line_1", "Unknown"),
+        "Address Line 2": patient_details.get("Address_Line_2", "Unknown"),
+        "NHS Organ Donor Status": patient_details.get("NHS_organ_donor", "Unknown"),
+        "NHS Blood Donor Status": patient_details.get("NHS_blood_donor", "Unknown")
+    }
+
+    df_summary = pandas.DataFrame([summary_data])
+    print("\nPatient Summary:")
+    print(tabulate.tabulate(df_summary, headers='keys', tablefmt='grid'))
+
+    input("\nPress Enter to return to Manage Patient Information.")
+    manage_patient_information()
+
+def view_patient_journals():
+    print("=" * 80)
+    print("VIEW PATIENT JOURNALS".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
+
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
+
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+
+    # Select a patient
+    while True:
+        selection = input("\nEnter the Index of the patient to view journals or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information()
+            return
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
+
+    # Display patient's journals
+    patient_details = patients[patient_email]
+    journals = patient_details.get("journals", [])
+
+    if not journals:
+        print("\nNo journal entries found for this patient.")
+    else:
+        # Convert journals to DataFrame
+        df_journals = pandas.DataFrame(journals)
+        print("\nPatient Journals:")
+        print(tabulate.tabulate(df_journals, headers='keys', tablefmt='grid'))
+
+    input("\nPress Enter to return to Manage Patient Information.")
+    manage_patient_information()
+
+def view_patient_records():
+    print("=" * 80)
+    print("VIEW PATIENT RECORDS".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
+
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
+
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+
+    # Select a patient
+    while True:
+        selection = input("\nEnter the Index of the patient to view records or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information()
+            return
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
+
+    # Display patient's conditions and clinical notes
+    patient_details = patients[patient_email]
+    conditions = patient_details.get("conditions", [])
+    clinical_notes = patient_details.get("clinical_notes", "None")
+
+    # Create DataFrame for conditions
+    df_conditions = pandas.DataFrame({"Conditions": conditions})
+    print("\nPatient Conditions:")
+    print(tabulate.tabulate(df_conditions, headers='keys', tablefmt='grid'))
+
+    # Display clinical notes
+    print("\nClinical Notes:")
+    print(clinical_notes)
+
+    # Options to add or edit conditions and clinical notes
+    while True:
+        print("\nOptions:")
+        print("[ 1 ] Add condition")
+        print("[ 2 ] Edit conditions")
+        print("[ 3 ] Edit clinical notes")
+        print("[ M ] Return to Manage Patient Information")
+        choice = input("Select an option: ").strip().upper()
+        if choice == "1":
+            new_condition = input("Enter the new condition: ").strip()
+            if new_condition:
+                conditions.append(new_condition)
+                patient_details["conditions"] = conditions
+                save_accounts(data)
+                print("Condition added successfully.")
+            else:
+                print("No condition entered.")
+        elif choice == "2":
+            if not conditions:
+                print("No conditions to edit.")
+                continue
+            print("\nCurrent Conditions:")
+            for idx, cond in enumerate(conditions, start=1):
+                print(f"[ {idx} ] {cond}")
+            cond_idx = input("Enter the number of the condition to edit: ").strip()
+            try:
+                cond_idx = int(cond_idx)
+                if 1 <= cond_idx <= len(conditions):
+                    new_value = input("Enter the new value for the condition: ").strip()
+                    if new_value:
+                        conditions[cond_idx - 1] = new_value
+                        patient_details["conditions"] = conditions
+                        save_accounts(data)
+                        print("Condition updated successfully.")
+                    else:
+                        print("No value entered.")
+                else:
+                    print("Invalid selection.")
+            except ValueError:
+                print("Invalid input.")
+        elif choice == "3":
+            new_notes = input("Enter new clinical notes: ").strip()
+            patient_details["clinical_notes"] = new_notes
+            save_accounts(data)
+            print("Clinical notes updated successfully.")
+        elif choice == "M":
+            manage_patient_information()
+            return
+        else:
+            print("Invalid choice. Please select a valid option.")
+
+# Manage patient information choices
+def manage_patient_information():
+    print("=" * 80)
+    print("MANAGE PATIENT INFORMATION".center(80))
+    print("[ 1 ] View patient records")
+    print("[ 2 ] View patient journals")
+    print("[ 3 ] View patient summary")
+    print("[ M ] Return to main menu")
+
+    while True:
+        choice = input("\nPlease select an option: ").strip().upper()
+        if choice == "1":
+            view_patient_records()
+        elif choice == "2":
+            view_patient_journals()
+        elif choice == "3":
+            view_patient_summary()
+        elif choice == "M":
+            gp_page()
+            break
+        else:
+            print("Invalid choice. Please select '1', '2', '3', or 'M'.")
 
 def display_patient_records():
     print("=" * 80)
     print("ALL PATIENTS".center(80), "\n")
+
 
     # Load the JSON file
     with open('accounts.json', 'r') as file:
 
         database = load(file)
         ptnt_table = [{"Name": patient["name"],
-                       "Surname": patient["surname"],
-                       "Birthdate": patient["date_of_birth"],
-                       "Email address": patient["email"]
+                    "Surname": patient["surname"],
+                    "Birthdate": patient["date_of_birth"],
+                    "Email address": patient["email"]
                        }
-                      for patient in database["patient"].values()
-                      ]
+                   for patient in database["patient"].values()
+                    ]
         df_1 = pandas.DataFrame(ptnt_table)
 
         # Display the table using tabulate
         print(tabulate.tabulate(df_1.values, headers=df_1.columns, tablefmt="grid"))
 
         while True:
-            ptn_email_add = input(
-                "\nEnter a patient's email address to view their record or M to return to main menu: ").strip()
+            ptn_email_add = input("\nEnter a patient's email address to view their record or M to return to main menu: ").strip()
             if ptn_email_add == "M":
                 gp_page()
             elif ptn_email_add not in database["patient"]:
@@ -1129,13 +1240,14 @@ def display_patient_records():
                 break
 
         patient_data = [{"Name": database["patient"][ptn_email_add]["name"],
-                         "Surname": database["patient"][ptn_email_add]["surname"],
-                         "Birthdate": database["patient"][ptn_email_add]["date_of_birth"],
-                         "Conditions": ", ".join(database["patient"][ptn_email_add]["conditions"])
+                    "Surname": database["patient"][ptn_email_add]["surname"],
+                    "Birthdate": database["patient"][ptn_email_add]["date_of_birth"],
+                    "Conditions": ", ".join(database["patient"][ptn_email_add]["conditions"])
                          }
                         ]
         df_2 = pandas.DataFrame(patient_data)
         print(tabulate.tabulate(df_2.values, headers=df_2.columns, tablefmt="grid"))
+
 
         # Convert the JSON data to a list of dictionaries for the DataFrame
         medical_records = load_or_initialize_records()
@@ -1157,7 +1269,9 @@ def display_patient_records():
     # Display the table using tabulate
     print(tabulate.tabulate(df.values, headers=df.columns, tablefmt="grid"))
 
-    # Next step after seeing patient records
+
+
+# Next step after seeing patient records
     while True:
         print("\n")
         print("[ 1 ] Edit patient records")
@@ -1171,20 +1285,18 @@ def display_patient_records():
             gp_page()
         else:
             print("Invalid input, please choose between: 1 or M")
-
-
 # [ 4 ] Check in/out patients
 # [ 5 ] Change patient details
 # [ X ] Logout
-# ==========================================================
+# main_menu()
+#==========================================================
 
 
-# ====================Homepage Accounts=====================
+#====================Homepage Accounts=====================
 def patients_page(email_address):
     print("=" * 80)
     print("PATIENT HOMEPAGE".center(80))
-    print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80),
-                            "green"))
+    print(termcolor.colored("Welcome, Patient. Ready to take the next step in your well-being journey?".center(80), "green"))
     print("-" * 80)
     print("[ 1 ] Book and manage appointments")
     print("[ 2 ] Change default GP")
@@ -1198,10 +1310,10 @@ def patients_page(email_address):
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "2":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
             mhresources(email_address=email_address)
@@ -1211,22 +1323,19 @@ def patients_page(email_address):
             update_account_page(email_address=email_address)
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
-
-
 def gp_page():
     print("=" * 80)
     print("GP HOMEPAGE".center(80))
-    print(termcolor.colored("Welcome, GP. Your dedication helps patients achieve their best mental health.".center(80),
-                            "green"))
+    print(termcolor.colored("Welcome, GP. Your dedication helps patients achieve their best mental health.".center(80), "green"))
     print("[ 1 ] View schedule")
     print("[ 2 ] Manage appointments ")
-    print("[ 3 ] Manage patient records")
+    print("[ 3 ] Manage patient information")
     print("[ 4 ] Check in/out patients ")
     print("[ 5 ] Change patient details ")
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ").strip()
+        choice = input("\nPlease select an option: ").strip()
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
@@ -1236,7 +1345,7 @@ def gp_page():
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            display_patient_records()
+            manage_patient_information()
         elif choice == "4":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
             main_menu()
@@ -1244,9 +1353,7 @@ def gp_page():
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
             main_menu()
         else:
-            print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
-
-
+            print("Please choose a valid option '1', '2', '3', '4', '5' or 'X'")
 def admins_page():
     print("=" * 80)
     print("ADMIN HOMEPAGE".center(80))
@@ -1264,27 +1371,25 @@ def admins_page():
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "2":
             delete_accounts()
         elif choice == "3":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "4":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "5":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")  # <---------------------------Put function here.
+            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
+#==========================================================
 
 
-# ==========================================================
-
-
-# =================Registration Functions===================
+#=================Registration Functions===================
 def verify_credentials(email, v_password, role):
     role_accounts = registered_users[role]
     if email in role_accounts:
@@ -1294,16 +1399,12 @@ def verify_credentials(email, v_password, role):
             return "Incorrect password"
     else:
         return "Email not found"
-
-
 def checking_email(email):
     email = email.lower()
     for role_accounts in registered_users.values():
         if email in map(str.lower, role_accounts.keys()):  # Ensure case-insensitive comparison
             return "Email already registered"
     return "Email available"
-
-
 def registering_user():
     print("=" * 80)
     print("REGISTERING".center(80))
@@ -1343,6 +1444,8 @@ def registering_user():
             except Exception:
                 print(f"Invalid birth date, try again.")
 
+
+
     while True:
         role = input("Are you a Patient or GP? : ").strip()
         if role.upper() == "M":
@@ -1354,6 +1457,7 @@ def registering_user():
             break
         else:
             print(f"The role '{role}' does not exist. Try entering Patient or GP.")
+
 
     while True:
         email_address = input("Email address: ").strip()
@@ -1372,6 +1476,7 @@ def registering_user():
             else:
                 print("Invalid email format. Please enter a valid email.")
                 print("Press 'M' to return to main menu")
+
 
     while True:
         input_password = input("Password [8 characters min, 1 uppercase letter min, and 1 number min]: ").strip()
@@ -1395,9 +1500,9 @@ def registering_user():
         elif not has_digit:
             print("The password is missing a number.")
         elif len(input_password) < 8:
-            print("Password length is less than 8 characters.")
+            print ("Password length is less than 8 characters.")
         elif not match(password_pattern, input_password):
-            print("Password is weak, try a stronger password")
+            print ("Password is weak, try a stronger password")
         else:
             confirm_password = input("Confirm password: ")
             if confirm_password != input_password:
@@ -1406,9 +1511,9 @@ def registering_user():
                 break
 
     while True:
-        print("Genders:")
-        print("[ 1 ] Male")
-        print("[ 2 ] Female")
+        print ("Genders:")
+        print ("[ 1 ] Male")
+        print ("[ 2 ] Female")
 
         try:
             user_gender = input("Please choose an option: ").strip()
@@ -1422,15 +1527,15 @@ def registering_user():
                 user_gender = "Female"
                 break
             else:
-                print("Please choose a valid option '1' or '2' ")
+                print ("Please choose a valid option '1' or '2' ")
         except Exception:
             print("Invalid option")
 
     if role == "patient":
         while True:
-            print("NHS blood donor:")
-            print("[ 1 ] Yes")
-            print("[ 2 } No")
+            print ("NHS blood donor:")
+            print ("[ 1 ] Yes")
+            print ("[ 2 } No")
 
             try:
                 a = input("Please choose an option: ").strip()
@@ -1440,18 +1545,18 @@ def registering_user():
                 if a == "1":
                     a = "IS Blood donor"
                     break
-                elif a == "2":
+                elif a=="2":
                     a = "NOT Blood donor"
                     break
                 else:
-                    print("Please choose '1', '2' or 'M' to return to menu")
+                    print ("Please choose '1', '2' or 'M' to return to menu")
             except Exception:
                 print("Invalid option")
 
         while True:
-            print("NHS organ donor:")
-            print("[ 1 ] Yes")
-            print("[ 2 } No")
+            print ("NHS organ donor:")
+            print ("[ 1 ] Yes")
+            print ("[ 2 } No")
 
             try:
                 b = input("Please choose an option: ").strip()
@@ -1461,11 +1566,11 @@ def registering_user():
                 if b == "1":
                     b = "IS Organ donor"
                     break
-                elif b == "2":
+                elif b=="2":
                     b = "NOT Organ donor"
                     break
                 else:
-                    print("Please choose '1', '2' or 'M' to return to menu")
+                    print ("Please choose '1', '2' or 'M' to return to menu")
             except Exception:
                 print("Invalid option")
 
@@ -1499,22 +1604,20 @@ def registering_user():
 
     if role == "patient":
         user = Accounts(email_address, input_password, first_name, sur_name,
-                        date_input, user_gender, role, a, b, ad1, ad2)
+                               date_input, user_gender, role, a, b, ad1, ad2)
     elif role == "gp":
         user = Accounts(email_address, input_password, first_name, sur_name,
-                        date_input, user_gender, role, ad1, ad2)
+                               date_input, user_gender, role, ad1, ad2)
+
 
     print("Your account has been made.")
     print("Current account is being registered to system...")
     sleep(3)
     print("Returing to main menu.")
     sleep(1)
-
-
 class Accounts:
     def __init__(self, email, a_password, name, surname, date_of_birth, gender,
-                 job_role, nhs_blood_donor=None, nhs_organ_donor=None, address_line_1="Unknown",
-                 address_line_2="Unknown",
+                 job_role, nhs_blood_donor=None, nhs_organ_donor=None, address_line_1="Unknown", address_line_2="Unknown",
                  conditions=None):
         self.email = email
         self.password = a_password
@@ -1558,12 +1661,10 @@ class Accounts:
 
         # Save the updated registered_users dictionary to the JSON file
         save_accounts(registered_users)
+#==========================================================
 
 
-# ==========================================================
-
-
-# ==================Login Function==========================
+#==================Login Function==========================
 def reset_password():
     print("=" * 80)
     print("PASSWORD RESET".center(80))
@@ -1638,13 +1739,12 @@ def reset_password():
         else:
             break
 
+
     registered_users[roless][email_addresss]["password"] = new_password
     save_accounts(registered_users)
     print("Password reset successfully.")
     main_menu()
     return
-
-
 def login_user(role):
     print("-" * 80)
     print("Please enter your details \n\nEnter 'R' to return to reset password\nEnter 'M' to return to main menu\n")
@@ -1680,10 +1780,12 @@ def login_user(role):
             elif login_password.upper() == "M":
                 main_menu()
 
+
             if email_address in map(str.lower, registered_users["admin"]) and \
                     registered_users["admin"][email_address]["password"] == login_password:
                 print("Admin login successful")
                 admins_page()
+
 
             result = verify_credentials(email_address, login_password, role=role)
 
@@ -1707,8 +1809,6 @@ def login_user(role):
 
         print("Returning to email input due to too many incorrect password attempts.")
         break
-
-
 def login_menu():
     while True:
         print("=" * 80)
@@ -1735,12 +1835,10 @@ def login_menu():
             main_menu()
         else:
             print("Invalid choice! Please enter 1, 2, 3, E, or M.")
+#=========================================================
 
 
-# =========================================================
-
-
-# =======================Main menu=========================
+#=======================Main menu=========================
 def main_menu():
     while True:
         print("=" * 80)
@@ -1763,11 +1861,10 @@ def main_menu():
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
 
+#=========================================================
 
-# =========================================================
 
-
-# ====================Call function========================
+#====================Call function========================
 def call_function():
     try:
         ensure_pip_installed()
@@ -1776,10 +1873,8 @@ def call_function():
         main_menu()
     except Exception as e:
         print(f"Excpetion is : {e}")
-
-
 call_function()
-# =========================================================
+#=========================================================
 
 
 
