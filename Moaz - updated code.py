@@ -1185,7 +1185,7 @@ def view_patient_records():
         else:
             print("Invalid choice. Please select a valid option.")
 
-# Manage patient information choices 
+# Manage patient information choices
 def manage_patient_information():
     print("=" * 80)
     print("MANAGE PATIENT INFORMATION".center(80))
