@@ -373,10 +373,12 @@ def delete_accounts():
 #====================Patient Homepage======================
 
 #[ 1 ] Book and manage appointments
-#[ 2 ] Change default GP
-#[ 3 ] Access meditation help & tips and more
 
-# Dictionary containing resources for different categories
+
+#[ 2 ] Change default GP
+
+
+#[ 3 ] Access meditation help & tips and more
 resources = {
     "Breathing Practices": {
         1: ("3 minute breathing practice", "https://drive.google.com/file/d/1nzkNZ9r2SWWn86NTDykEkCj4HosAgfGb/view"),
@@ -402,18 +404,17 @@ resources = {
         2: ("Relief From Stress & Pressure by Mary Maddux", "https://insighttimer.com/meditationoasis/guided-meditations/relief-from-stress-and-pressure"),
     },
 }
-
 def mhresources(email_address):
     """Function to display the main menu and navigate categories."""
     while True:
         print("\nAvailable Categories:")
         for num, category in enumerate(resources.keys(), 1):
             print(f"{num}. {category}")
-        print("Type 'exit' to return to the patient homepage.")
+        print("Type 'E' to return to the patient homepage.")
 
         user_input = input("Enter the number corresponding to the category: ").strip().lower()
 
-        if user_input == "exit":
+        if user_input.upper() == "E":
             patients_page(email_address)
 
         # Validate category selection
@@ -426,19 +427,18 @@ def mhresources(email_address):
                 print("Invalid input. Please choose a valid category number.")
         except ValueError:
             print("Invalid input. Please enter a number.")
-
 def category_menu(category_name, email_address):
     """Function to display links for the selected category."""
     print(f"\n{category_name} Resources:")
     category_resources = resources[category_name]
     for num, (description, _) in category_resources.items():
         print(f"{num}. {description}")
-    print("Type 'back' to return to the main menu.")
+    print("Type 'B' to return to the main menu.")
 
     while True:
         user_input = input("Enter the number corresponding to the resource: ").strip().lower()
 
-        if user_input == "back":
+        if user_input.upper() == "B":
             mhresources(email_address=email_address)
 
         # Validate resource selection
@@ -452,13 +452,12 @@ def category_menu(category_name, email_address):
                 print("Invalid input. Please choose a valid resource number.")
         except ValueError:
             print("Invalid input. Please enter a number.")
-
 def post_selection(category_name, email_address):
     """Function to follow up after a resource selection."""
     print("\nWe hope this resource was helpful.")
     print("1. Explore more resources in this category.")
     print("2. Explore other categories.")
-    print("Type 'back' to return to the patient homepage, if further support is needed.")
+    print("Type 'B' to return to the patient homepage, if further support is needed.")
 
     while True:
         user_input = input("Enter the number corresponding to your choice or type 'back': ").strip().lower()
@@ -467,32 +466,39 @@ def post_selection(category_name, email_address):
             return category_menu(category_name)
         elif user_input == "2":
             mhresources(email_address=email_address)
-        elif user_input == "back":
+        elif user_input.upper() == "B":
             patients_page(email_address=email_address)
         else:
             print("Invalid input. Please enter a valid option.")
 
-#[ 4 ] Change account details
 
+# [ 5 ] Change patient details
 def update_account_page(email_address):
     data = load_accounts()
     account_details = data["patient"][email_address]
     updates_made = False
 
     while True:
-        print("--------------------------------------------------------------------------------")
-        print("These are your current account details:\n")
+        print("="*80)
+        print("Account Details:\n".center(80))
         counter = 1
         for key, value in account_details.items():
             if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
                 print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
                 counter += 1
-        print("[ 0 ]  Exit to Homepage ")
-        print("\n")
+        print("\n[ H ]  Go to Homepage\n")
+        # print("\n")
 
 
         update_option = input("Please select an option to edit: ").strip()
-        if (update_option.isdigit() and 0 <= int(update_option) <= 9) :
+
+        if update_option.upper() == "H":
+            print("Returning to your homepage...\n")
+            sleep(1)
+            patients_page(email_address)
+            break
+
+        if update_option.isdigit() and 0 <= int(update_option) <= 9:
             update_option = int(update_option)
         else:
             print("\n")
@@ -500,17 +506,13 @@ def update_account_page(email_address):
             continue
 
 
-        if update_option == 0:
-            print("Returning to your homepage...")
-            sleep(1)
-            patients_page(email_address)
-            break
-
-
         if update_option == 1:
             while True:
-                new_email = input("Please enter your new email address:").strip()
+                new_email = input("Please enter your new email address: ").strip()
                 email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
+
+                if new_email.upper() == "E":
+                    break
 
                 if new_email == email_address:
                     print("This is already your current email. ")
@@ -533,7 +535,7 @@ def update_account_page(email_address):
                         else:
                             print("Incorrect code. Please try again")
                             if attempt == 3:
-                                print("Too many incorrect attempts. No change has been made to your account. Returning to your homepage...")
+                                print("Too many incorrect attempts. No change has been made to your account. Returning to your homepage...\n")
                                 sleep(2)
                                 patients_page(email_address)
                                 return
@@ -551,39 +553,42 @@ def update_account_page(email_address):
             new_first_name = input("Please enter your new first name: ").strip()
             if new_first_name != account_details["name"]:
                 while True:
-                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
                     if final_confirmation == "y":
                         account_details["name"] = new_first_name
                         updates_made = True
                         break
 
                     elif final_confirmation == "n":
-                        print("Returning to your patient homepage...")
-                        sleep(1)
-                        patients_page(email_address)
+                        # print("Returning to your patient homepage...")
+                        # sleep(1)
+                        # patients_page(email_address)
+                        break
 
                     else:
-                        print("Please input a valid option, either Y or N ")
+                        print("Please input a valid option, either Y or N. ")
 
             else:
-                print("This is already your current first name")
+                print("This is already your current first name.")
 
 
 
         elif update_option == 3:
-            new_surname = input("Please enter your new surname").strip()
+            new_surname = input("Please enter your new surname: ").strip()
             if new_surname != account_details["surname"]:
                 while True:
-                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
                     if final_confirmation == "y":
                         account_details["surname"] = new_surname
                         updates_made = True
                         break
 
                     elif final_confirmation == "n":
-                        print("Returning to your patient homepage...")
-                        sleep(1)
-                        patients_page(email_address)
+                        break
+                        # print("Returning to your patient homepage...")
+                        # sleep(1)
+                        # patients_page(email_address)
+
 
                     else:
                         print("Please input a valid option, either Y or N ")
@@ -595,6 +600,10 @@ def update_account_page(email_address):
         elif update_option == 4:
             while True:
                 new_birthday = input("Birth date (DD/MM/YYYY): ").strip()  # Pad single digit day with zero if necessary
+
+                if new_birthday.upper() == "E":
+                    break
+
                 if new_birthday != account_details["date_of_birth"]:
                     try:
                         day, month, year = map(int, new_birthday.split("/"))
@@ -605,7 +614,7 @@ def update_account_page(email_address):
                     except ValueError:
                         print("Invalid birth date. Please enter in the format DD/MM/YYYY.")
                 else:
-                    print("This is already your current date of birth")
+                    print("This is already your current date of birth.")
                     break
 
 
@@ -620,6 +629,8 @@ def update_account_page(email_address):
                     new_gender = "Male"
                 elif new_gender_option == "2":
                     new_gender = "Female"
+                elif new_gender_option.upper() == "E":
+                    break
                 else:
                     print("Please choose a valid option '1' or '2' ")
 
@@ -634,7 +645,7 @@ def update_account_page(email_address):
 
         elif update_option == 6:
             while True:
-                print("NHS blood donor:")
+                print("NHS blood donor: ")
                 print("[ 1 ] Yes")
                 print("[ 2 } No")
                 donor_new = input("Please choose an option: ").strip()
@@ -642,6 +653,8 @@ def update_account_page(email_address):
                     donor_new = "IS Blood donor"
                 elif donor_new == "2":
                     donor_new = "NOT Blood donor"
+                elif donor_new.upper() == "E":
+                    break
                 else:
                     print("Invalid choice, Please choose 1 or 2")
                     continue
@@ -666,6 +679,8 @@ def update_account_page(email_address):
                     organ_new = "IS Organ donor"
                 elif organ_new == "2":
                     organ_new = "NOT Organ donor"
+                elif organ_new.upper() == "E":
+                    break
                 else:
                     print("Invalid choice. Please choose 1 or 2")
                     continue
@@ -682,46 +697,48 @@ def update_account_page(email_address):
 
         elif update_option == 8:
 
-            ad1_new = input("Please enter a new Address Line 1 ")
+            ad1_new = input("Please enter a new Address Line 1: ")
             if ad1_new != account_details["Address_Line_1"]:
                 while True:
-                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
                     if final_confirmation == "y":
                         account_details["Address_Line_1"] = ad1_new
                         updates_made = True
                         break
 
                     elif final_confirmation == "n":
-                        print("Returning to your patient homepage...")
-                        sleep(1)
-                        patients_page(email_address)
+                        break
+                        # print("Returning to your patient homepage...")
+                        # sleep(1)
+                        # patients_page(email_address)
 
                     else:
-                        print("Please input a valid option, either Y or N ")
+                        print("Please input a valid option, either Y or N. ")
 
             else:
-                print("This is already your current Address Line 2")
+                print("This is already your current Address Line 2.")
 
 
         elif update_option == 9:
-            ad2_new = input("Please enter a new Address Line 2 ")
+            ad2_new = input("Please enter a new Address Line 2: ")
             if ad2_new != account_details["Address_Line_2"]:
                 while True:
-                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N) ").strip().lower()
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
                     if final_confirmation == "y":
                         account_details["Address_Line_2"] = ad2_new
                         updates_made = True
                         break
 
                     elif final_confirmation == "n":
-                        print("Returning to your patient homepage...")
-                        sleep(1)
-                        patients_page(email_address)
+                        break
+                        # print("Returning to your patient homepage...")
+                        # sleep(1)
+                        # patients_page(email_address)
 
                     else:
-                        print("Please input a valid option, either Y or N ")
+                        print("Please input a valid option, either Y or N. ")
             else:
-                print("This is already your current Address Line 2")
+                print("This is already your current Address Line 2.")
 
         else:
             print("Invalid option")
@@ -740,10 +757,10 @@ def update_account_page(email_address):
             updates_made = False
 
         else:
-            print("No changes were made.")
+            print("\nNo changes were made.\n")
             sleep(1)
 
-        print("--------------------------------------------------------------------------------")
+        print("-"*80)
         print("Updated account details:")
         print("")
         for key,value in account_details.items():
@@ -751,15 +768,17 @@ def update_account_page(email_address):
                 print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
 
         print("\n")
-        edit_again= input("Would you like to eit another detail? (Y/N): ").strip().lower()
+        edit_again= input("Would you like to edit another detail? (Y/N): ").strip().lower()
         if edit_again == "n":
-            print("Returning to your homepage...")
+            print("\nReturning to your homepage...")
             sleep(1)
             patients_page(email_address)
             break
         elif edit_again!= "y":
-            print("Invalid input, returning to the edit menu")
+            print("Returning to the edit menu")
 
+
+#[ 4 ] Access journal entries
 def journal_page(email_address):
     while True:
         print("="* 80)
@@ -780,7 +799,6 @@ def journal_page(email_address):
         else:
             print("Invalid choice, please select '1', '2' or 'H' ")
 
-# [ 5 ] Access journal entries
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
     entry_line = []
@@ -830,21 +848,19 @@ def view_journal_entries(email_address):
         print("-" * 40)
         print(journal['entry'])
         print("-" * 40)
-
-#[ X ] Logout
-
-# login_menu()
 #==========================================================
 
 
 #=======================GP Homepage========================
 # [ 1 ] View schedule
+
+
 # [ 2 ] Manage appointments
+
+
 # [ 3 ] Manage patient records
 ACCOUNTS_FILE = "accounts.json"
 MEDICAL_RECORDS_FILE = "medical_records.json"
-
-# Function to load the accounts from the accounts.json file
 def load_accounts2():
     if os.path.exists(ACCOUNTS_FILE):
         with open(ACCOUNTS_FILE, "r") as file:
@@ -853,9 +869,7 @@ def load_accounts2():
             except JSONDecodeError:
                 return {}  # Return empty dictionary if JSON is corrupted or empty
     else:
-        return {}  # Return empty dictionary if the file doesn't exist
-
-# Function to load or initialize medical records
+        return {}  # Return empty dictionary if the file doesn't exi
 def load_or_initialize_records():
     if os.path.exists(MEDICAL_RECORDS_FILE):
         with open(MEDICAL_RECORDS_FILE, "r") as file:
@@ -896,16 +910,12 @@ def load_or_initialize_records():
             dump(records, file, indent=4)
 
         return records
-
-# Function to save medical records to the JSON file
 def save_medical_records(records):
     try:
         with open(MEDICAL_RECORDS_FILE, "w") as file:
             dump(records, file, indent=4)  # Save with indentation for readability
     except Exception as e:
         print(f"Error saving medical records: {e}")
-
-# Function to add or update clinical notes for a patient
 def add_clinical_note(email, note):
     # Get the current timestamp for the note
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Format as: YYYY-MM-DD HH:MM:SS
@@ -930,7 +940,6 @@ def add_clinical_note(email, note):
 
     # Save the updated medical records
     save_medical_records(medical_records)
-
 def add_patient_record():
     print("=" * 80)
     print("EDIT PATIENT RECORDS".center(80))
@@ -964,7 +973,6 @@ def add_patient_record():
     print("\nPatient record updated successfully.")
     sleep(2)
     gp_page()
-
 def display_patient_records():
     print("=" * 80)
     print("ALL PATIENTS".center(80), "\n")
@@ -1042,10 +1050,12 @@ def display_patient_records():
             gp_page()
         else:
             print("Invalid input, please choose between: 1 or M")
+
+
 # [ 4 ] Check in/out patients
-# [ 5 ] Change patient details
-# [ X ] Logout
-# main_menu()
+
+
+
 #==========================================================
 
 
