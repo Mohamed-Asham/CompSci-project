@@ -670,16 +670,22 @@ def post_selection(category_name, email_address):
 #[ 4 ] Access journal entries
 def journal_page(email_address):
     while True:
-        print("="* 80)
+        print("=" * 80)
         print("JOURNALS PAGE".center(80))
-        print("[ 1 ] View previous entries")
-        print("[ 2 ] Make a new journal entry")
+        print("[ 1 ] Make a new journal entry")
+        print("[ 2 ] View previous journal entries")
+        print("[ 3 ] Edit previous journal entries")
+        print("[ 4 ] Delete previous journal entries")
         print("[ H ] Return to your homepage")
-        choice= input("\nPlease select an option: ").strip().upper()
+        choice = input("\nPlease select an option: ").strip().upper()
         if choice == "1":
-            view_journal_entries(email_address)
-        elif choice == "2":
             new_journal_entry(email_address)
+        elif choice == "2":
+            view_journal_entries(email_address)
+        elif choice == "3":
+            edit_journal_entries(email_address)
+        elif choice == "4":
+            delete_journal_entries(email_address)
         elif choice == "H":
             print("Returning to your homepage...")
             sleep(1)
@@ -687,6 +693,7 @@ def journal_page(email_address):
             break
         else:
             print("Invalid choice, please select '1', '2' or 'H' ")
+
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
     entry_line = []
@@ -720,21 +727,176 @@ def new_journal_entry(email_address):
     print("Returning to your journals page... ")
     sleep(1)
     journal_page(email_address)
+
+
 def view_journal_entries(email_address):
-    data=load_accounts()
-    patient_account= data["patient"][email_address]
-    journals = patient_account.get("journals", [] )
+    data = load_accounts()
+    patient_account = data["patient"][email_address]
+    journals = patient_account.get("journals", [])
     if not journals:
         print("\nYou have no journal entries. ")
+        while True:
+            new_journal = input("Would you like to write your first journal entry? (Y/N) ").strip().upper()
+            if new_journal == "Y":
+                new_journal_entry(email_address)
+                break
+            elif new_journal == "N":
+                print("Returning to your homepage...")
+                sleep(1)
+                patients_page(email_address)
+                break
+            else:
+                print("Invalid choice. Please choose either Y or N")
         return
     journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
 
+    print("Loading your previous journal entries...")
+    sleep(2)
     print("\nYour Journal Entries:")
     for idx, journal in enumerate(journals_sorted, start=1):
         print(f"\nEntry {idx} - Date: {journal['date']}")
         print("-" * 40)
         print(journal['entry'])
         print("-" * 40)
+        sleep(1)
+    while True:
+        new_journal = input("Would you like to add another journal entry? (Y/N) ").strip().upper()
+        if new_journal == "Y":
+            new_journal_entry(email_address)
+            break
+        elif new_journal == "N":
+            print("Returning to your journals page...")
+            sleep(1)
+            journal_page(email_address)
+            break
+        else:
+            print("Invalid choice. Please choose either Y or N")
+
+
+def edit_journal_entries(email_address):
+    data = load_accounts()
+    patient_account = data["patient"][email_address]
+    journals = patient_account.get("journals", [])
+    if not journals:
+        print("\nYou have no journal entries to edit")
+        print("Returning to your journals page...")
+        sleep(2)
+        journal_page(email_address)
+        return
+
+    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
+    print("Fetching your previous journal entries...")
+    sleep(2)
+    print("Your Journal Entries: ")
+    for idx, journal in enumerate(journals_sorted, start=1):
+        print(f"\nEntry {idx} - Date: {journal['date']}")
+        print("-" * 40)
+        print(journal['entry'])
+        print("-" * 40)
+        sleep(1)
+
+    while True:
+        choice = input(
+            "\nEnter the number of the entry you wish to edit (or 'B' to go back to the journals page): ").strip()
+        if choice.upper() == "B":
+            print("Returning to your journals page...")
+            sleep(1)
+            journal_page(email_address)
+        try:
+            entry_num = int(choice)
+            if 1 <= entry_num <= len(journals_sorted):
+                break
+            else:
+                print("Invalid entry number.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+    selected_journal = journals_sorted[entry_num - 1]
+
+    print("\nCurrent entry: \n")
+    print(selected_journal['entry'])
+
+    print("\nEnter your new journal entry. Type 'SAVE' on a new line to save your entry.")
+    new_entry_lines = []
+    while True:
+        line = input()
+        if line.strip().upper() == "SAVE":
+            break
+        else:
+            new_entry_lines.append(line)
+    new_entry_text = "\n".join(new_entry_lines)
+    if not new_entry_text.strip():
+        print("Empty journal entry. No changes made. ")
+        return
+    selected_journal['entry'] = new_entry_text
+    data["patient"][email_address]["journals"] = journals
+    save_accounts(data, mode="override")
+    print("Saving your changes..")
+    sleep(1)
+    print("Your journal entry has been updated.")
+    sleep(1)
+    print("Returning to your journals page...")
+    sleep(1)
+    journal_page(email_address)
+
+
+
+def delete_journal_entries(email_address):
+    data = load_accounts()
+    patient_account = data["patient"][email_address]
+    journals = patient_account.get("journals", [])
+    if not journals:
+        print("\nYou have no journal entries to edit")
+        print("Returning to your journals page...")
+        sleep(2)
+        journal_page(email_address)
+        return
+
+    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
+    print("Fetching your previous journal entries...")
+    sleep(2)
+    print("Your Journal Entries: ")
+    for idx, journal in enumerate(journals_sorted, start=1):
+        print(f"\nEntry {idx} - Date: {journal['date']}")
+        print("-" * 40)
+        print(journal['entry'])
+        print("-" * 40)
+        sleep(1)
+
+    while True:
+        choice = input(
+            "\nEnter the number of the entry you wish to edit (or 'B' to go back to the journals page): ").strip()
+        if choice.upper() == "B":
+            print("Returning to your journals page...")
+            sleep(1)
+            journal_page(email_address)
+        try:
+            entry_num = int(choice)
+            if 1 <= entry_num <= len(journals_sorted):
+                break
+            else:
+                print("Invalid entry number.")
+        except ValueError:
+            print("Please enter a valid number.")
+
+    selected_journal = journals_sorted[entry_num - 1]
+
+    print("\nCurrent entry: \n")
+    print(selected_journal['entry'])
+
+    confirm= input("Are you sure you want to delete this entry? (Y/N) ").strip().upper()
+    if confirm == "Y":
+        journals.remove(selected_journal)
+        data["patient"][email_address]["journals"] = journals
+        save_accounts(data, mode="override")
+        print("Saving your changes...")
+        sleep(1)
+        print("Your journal entry has been deleted.")
+    else:
+        print("\nDeletion cancelled.")
+    print("Returning to your journals page...")
+    sleep(1)
+    journal_page(email_address)
 
 # [ 5 ] Change patient details
 def update_account_page(email_address):
