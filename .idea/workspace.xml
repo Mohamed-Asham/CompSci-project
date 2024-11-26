@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9fab4401-5037-4949-b16c-a413b26608f3" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/COMBINED CODE.py" beforeDir="false" afterPath="$PROJECT_DIR$/COMBINED CODE.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -48,18 +49,19 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Python.COMBINED CODE.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Calendar.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Combined Asham X Mohamed.executor&quot;: &quot;Run&quot;,
-    &quot;Python.Compsci project.executor&quot;: &quot;Run&quot;,
-    &quot;Python.mental_health_resources.executor&quot;: &quot;Run&quot;,
-    &quot;Python.myproject.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Python.COMBINED CODE.executor": "Run",
+    "Python.Calendar.executor": "Run",
+    "Python.Combined Asham X Mohamed.executor": "Run",
+    "Python.Compsci project.executor": "Run",
+    "Python.mental_health_resources.executor": "Run",
+    "Python.myproject.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "git-widget-placeholder": "<unknown>",
+    "node.js.selected.package.tslint": "(autodetect)"
   }
-}</component>
+}]]></component>
   <component name="RunManager">
     <configuration name="Compsci project" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
       <module name="CompSci-project" />
@@ -74,6 +76,7 @@
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
+      <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/Compsci project.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
@@ -112,5 +115,10 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/CompSci_project$Compsci_project.coverage" NAME="Compsci project Coverage Results" MODIFIED="1732634858746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CompSci_project$Mohamed_N___patient_stuff.coverage" NAME="Mohamed N - patient stuff Coverage Results" MODIFIED="1732633734617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/CompSci_project$COMBINED_CODE.coverage" NAME="COMBINED CODE Coverage Results" MODIFIED="1732635285208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
   </component>
 </project>

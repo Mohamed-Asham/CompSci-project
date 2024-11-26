@@ -4,39 +4,14 @@
             "email": "mnedjadi2003@gmail.com",
             "password": "Yamina20",
             "name": "mohamed",
-            "surname": "nedjadi",
+            "surname": "nedjdai",
             "date_of_birth": "05/11/2003",
             "gender": "Male",
             "NHS_blood_donor": "IS Blood donor",
             "NHS_organ_donor": "IS Organ donor",
-            "Address_Line_1": "401 Jutsum",
-            "Address_Line_2": "lONNDON",
-            "journals": [
-                {
-                    "date": "2024-11-24 15:47:03",
-                    "entry": "cwdhcfwefhciwehfwef\nwefuiweifherwighfer\newfuiwehfopwehfwe["
-                }
-            ],
-            "conditions": [],
-            "clinical_notes": "None"
-        },
-        "tangid.mhm03@outlook.com": {
-            "email": "tangid.mhm03@outlook.com",
-            "password": "Excalibur5",
-            "name": "Tangid",
-            "surname": "Mohammad",
-            "date_of_birth": "16/09/2003",
-            "gender": "Male",
-            "NHS_blood_donor": "IS Blood donor",
-            "NHS_organ_donor": "NOT Organ donor",
-            "Address_Line_1": "86 Victoria Road",
+            "Address_Line_1": "401 Jutsum House",
             "Address_Line_2": "London",
-            "journals": [
-                {
-                    "date": "2024-11-24 16:49:05",
-                    "entry": "Hello, my name is Tangid\nI want to go home\n\n\nBye"
-                }
-            ],
+            "journals": [],
             "conditions": [],
             "clinical_notes": "None"
         }
