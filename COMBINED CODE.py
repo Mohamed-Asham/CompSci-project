@@ -415,12 +415,7 @@ def view_patient_schedule(patient_email):
     sleep(2)
     patients_page(patient_email)
 def book_appointment(patient_email, gp_email):
-    """
-    Allows a patient to book an appointment with their assigned GP.
-    Displays the GP's schedule with time slots as rows and days as columns,
-    marking unavailable days as 'Unavailable' and showing Slot IDs for available slots.
-    The patient books an appointment by selecting the Slot ID.
-    """
+
     conn = sqlite3.connect('appointments.db')
     cursor = conn.cursor()
 
@@ -435,7 +430,6 @@ def book_appointment(patient_email, gp_email):
         conn.close()
         patients_page(patient_email)
 
-    # Ask for the start date of the week
     while True:
         start_date_input = input("Enter the start date of the week (YYYY-MM-DD): ").strip()
         try:
@@ -445,11 +439,9 @@ def book_appointment(patient_email, gp_email):
             print("Invalid date format. Please use YYYY-MM-DD.")
             conn.close()
 
-    # Generate the week schedule (7 days from the start date)
     end_date = start_date + timedelta(days=6)
     schedule = {}  # Dictionary to store time slots for each date
 
-    # Query for available slots for the GP in the given week
     query = """
     SELECT id, date, time_slot
     FROM appointments
@@ -475,7 +467,6 @@ def book_appointment(patient_email, gp_email):
     for slot_id, date, time_slot in available_slots:
         schedule[time_slot][date] = f"[{slot_id}]"
 
-    # Display the schedule in tabular format
     headers = ["Time Slot"] + [str(start_date + timedelta(days=i)) for i in range(7)]
     table = [[time_slot] + [schedule[time_slot][date] for date in headers[1:]] for time_slot in time_slots]
     print("\nGP's Weekly Schedule:")
@@ -693,7 +684,6 @@ def journal_page(email_address):
             break
         else:
             print("Invalid choice, please select '1', '2', '3', '4' or 'H' ")
-
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
     entry_line = []
@@ -727,8 +717,6 @@ def new_journal_entry(email_address):
     print("Returning to your journals page... ")
     sleep(1)
     journal_page(email_address)
-
-
 def view_journal_entries(email_address):
     data = load_accounts()
     patient_account = data["patient"][email_address]
@@ -771,8 +759,6 @@ def view_journal_entries(email_address):
             break
         else:
             print("Invalid choice. Please choose either Y or N")
-
-
 def edit_journal_entries(email_address):
     data = load_accounts()
     patient_account = data["patient"][email_address]
@@ -838,9 +824,6 @@ def edit_journal_entries(email_address):
     print("Returning to your journals page...")
     sleep(1)
     journal_page(email_address)
-
-
-
 def delete_journal_entries(email_address):
     data = load_accounts()
     patient_account = data["patient"][email_address]
@@ -1207,7 +1190,125 @@ def update_account_page(email_address):
 
 #=======================GP Homepage========================
 # [ 1 ] View schedule
+def view_gp_schedule(gp_email):
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
 
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        print("No appointments scheduled.\nReturning to Main menu...")
+        sleep(2)
+        gp_page(gp_email)
+
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "Patient Email", "Status"]
+
+    for row in rows:
+        table.append(row)
+
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+    print("\n[ 1 ] View by week")
+    print("[ M ] Return to Main menu")
+    while True:
+        c2 = input("\nPlease choose an option: ")
+        if c2.upper() == "M":
+            gp_page(gp_email)
+        elif c2 == "1":
+            view_gp_schedule_by_week(gp_email)
+        else:
+            print("Please choose a valid option '1' or 'M'")
+def view_gp_schedule_by_week(gp_email):
+    """
+    Allows the GP to view their schedule for a specific week, starting from a chosen day.
+    Displays the schedule in a 5-day format with time slots and patient emails.
+    """
+    # Ask the GP for the start date of the week
+    while True:
+        try:
+            start_date_str = input("Enter the start date of the week (YYYY-MM-DD): ").strip()
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            break
+        except ValueError:
+            print("Invalid date format. Please enter the date in YYYY-MM-DD format.")
+
+
+    end_date = start_date + timedelta(days=4)  # End date is 4 days after the start date
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    # Query appointments for the given GP and the week (5 days)
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ? AND date BETWEEN ? AND ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email, start_date, end_date))
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        print(f"No appointments scheduled for the week starting {start_date}.\n")
+        print("[ 1 ] View a different week schedule")
+        print("[ M ] Return to Main menu")
+        while True:
+            c4 = input("Please select an option: ")
+            if c4.upper() == "M":
+                gp_page(gp_email)
+            elif c4 == "1":
+                view_patient_schedule(gp_email)
+            else:
+                print("Please choose a valid option '1' or 'M'")
+
+    # Prepare the schedule in a week-view format (5 days)
+    schedule = {}
+    for row in rows:
+        slot_id, date, time_slot, patient_email, appointment_status = row
+        if date not in schedule:
+            schedule[date] = {}
+        schedule[date][time_slot] = patient_email if patient_email else None
+
+    # Generate a 5-day table to view the schedule
+    headers = ["Time Slot", *[start_date + timedelta(days=i) for i in range(7)]]
+    table = []
+
+    # Define the full list of time slots, including 16:30
+    time_slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30']
+
+    for time_slot in time_slots:
+        row = [time_slot]
+        for day in range(7):
+            date_to_check = start_date + timedelta(days=day)
+            email = schedule.get(date_to_check, {}).get(time_slot, None)
+            if email:
+                row.append(f"{email}")
+            else:
+                row.append("")
+        table.append(row)
+
+    # Print the schedule
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid', stralign='center'))
+    print("\n[ 1 ] To view a different week")
+    print("[ M ] Return to main menu")
+    while True:
+        c3 = input("Please select an option: ")
+        if c3.upper() == "M":
+            gp_page(gp_email)
+        elif c3 == "1":
+            view_gp_schedule_by_week(gp_email)
+        else:
+            print("Please choose a valid option '1' or 'M'")
 
 # [ 2 ] Manage appointments
 def setup_database():
@@ -1346,125 +1447,6 @@ def initialize_and_populate_new_gp_slots():
     # Commit changes and close the connection
     connection.commit()
     connection.close()
-def view_gp_schedule(gp_email):
-    conn = sqlite3.connect('appointments.db')
-    cursor = conn.cursor()
-
-    query = """
-    SELECT id, date, time_slot, patient_email, appointment_status
-    FROM appointments
-    WHERE gp_email = ?
-    ORDER BY date, time_slot;
-    """
-    cursor.execute(query, (gp_email,))
-    rows = cursor.fetchall()
-    conn.close()
-
-    if not rows:
-        print("No appointments scheduled.\nReturning to Main menu...")
-        sleep(2)
-        gp_page(gp_email)
-
-    table = []
-    headers = ["Slot ID", "Date", "Time Slot", "Patient Email", "Status"]
-
-    for row in rows:
-        table.append(row)
-
-    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
-    print("\n[ 1 ] View by week")
-    print("[ M ] Return to Main menu")
-    while True:
-        c2 = input("\nPlease choose an option: ")
-        if c2.upper() == "M":
-            gp_page(gp_email)
-        elif c2 == "1":
-            view_gp_schedule_by_week(gp_email)
-        else:
-            print("Please choose a valid option '1' or 'M'")
-def view_gp_schedule_by_week(gp_email):
-    """
-    Allows the GP to view their schedule for a specific week, starting from a chosen day.
-    Displays the schedule in a 5-day format with time slots and patient emails.
-    """
-    # Ask the GP for the start date of the week
-    while True:
-        try:
-            start_date_str = input("Enter the start date of the week (YYYY-MM-DD): ").strip()
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-            break
-        except ValueError:
-            print("Invalid date format. Please enter the date in YYYY-MM-DD format.")
-
-
-    end_date = start_date + timedelta(days=4)  # End date is 4 days after the start date
-
-    conn = sqlite3.connect('appointments.db')
-    cursor = conn.cursor()
-
-    # Query appointments for the given GP and the week (5 days)
-    query = """
-    SELECT id, date, time_slot, patient_email, appointment_status
-    FROM appointments
-    WHERE gp_email = ? AND date BETWEEN ? AND ?
-    ORDER BY date, time_slot;
-    """
-    cursor.execute(query, (gp_email, start_date, end_date))
-    rows = cursor.fetchall()
-    conn.close()
-
-    if not rows:
-        print(f"No appointments scheduled for the week starting {start_date}.\n")
-        print("[ 1 ] View a different week schedule")
-        print("[ M ] Return to Main menu")
-        while True:
-            c4 = input("Please select an option: ")
-            if c4.upper() == "M":
-                gp_page(gp_email)
-            elif c4 == "1":
-                view_patient_schedule(gp_email)
-            else:
-                print("Please choose a valid option '1' or 'M'")
-
-    # Prepare the schedule in a week-view format (5 days)
-    schedule = {}
-    for row in rows:
-        slot_id, date, time_slot, patient_email, appointment_status = row
-        if date not in schedule:
-            schedule[date] = {}
-        schedule[date][time_slot] = patient_email if patient_email else None
-
-    # Generate a 5-day table to view the schedule
-    headers = ["Time Slot", *[start_date + timedelta(days=i) for i in range(7)]]
-    table = []
-
-    # Define the full list of time slots, including 16:30
-    time_slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
-                  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30']
-
-    for time_slot in time_slots:
-        row = [time_slot]
-        for day in range(7):
-            date_to_check = start_date + timedelta(days=day)
-            email = schedule.get(date_to_check, {}).get(time_slot, None)
-            if email:
-                row.append(f"{email}")
-            else:
-                row.append("")
-        table.append(row)
-
-    # Print the schedule
-    print(tabulate.tabulate(table, headers=headers, tablefmt='grid', stralign='center'))
-    print("\n[ 1 ] To view a different week")
-    print("[ M ] Return to main menu")
-    while True:
-        c3 = input("Please select an option: ")
-        if c3.upper() == "M":
-            gp_page(gp_email)
-        elif c3 == "1":
-            view_gp_schedule_by_week(gp_email)
-        else:
-            print("Please choose a valid option '1' or 'M'")
 def confirm_appointments(gp_email):
 
     conn = sqlite3.connect('appointments.db')
@@ -1520,13 +1502,6 @@ def confirm_appointments(gp_email):
             except ValueError:
                 print("Invalid input. Please enter a valid [Slot ID].")
 def view_upcoming_appointments(gp_email):
-    """
-    Allows a GP to view all upcoming confirmed and requested appointments in a tabular format.
-    """
-    import sqlite3
-    from datetime import datetime
-    import tabulate
-    from time import sleep
 
     conn = sqlite3.connect('appointments.db')
     cursor = conn.cursor()
@@ -1573,8 +1548,6 @@ def view_upcoming_appointments(gp_email):
             cancel_gp_appointment(gp_email)
         else:
             print("Please choose a valid option '1' , '2' or 'M'")
-
-
 def cancel_gp_appointment(gp_email):
 
     conn = sqlite3.connect('appointments.db')

@@ -930,7 +930,6 @@ def add_clinical_note(email, note):
 
     # Save the updated medical records
     save_medical_records(medical_records)
-
 def add_patient_record():
     print("=" * 80)
     print("EDIT PATIENT RECORDS".center(80))
@@ -964,7 +963,6 @@ def add_patient_record():
     print("\nPatient record updated successfully.")
     sleep(2)
     gp_page()
-
 def view_patient_summary():
     print("=" * 80)
     print("VIEW PATIENT SUMMARY".center(80))
@@ -1024,7 +1022,6 @@ def view_patient_summary():
 
     input("\nPress Enter to return to Manage Patient Information.")
     manage_patient_information()
-
 def view_patient_journals():
     print("=" * 80)
     print("VIEW PATIENT JOURNALS".center(80))
@@ -1079,7 +1076,6 @@ def view_patient_journals():
 
     input("\nPress Enter to return to Manage Patient Information.")
     manage_patient_information()
-
 def view_patient_records():
     print("=" * 80)
     print("VIEW PATIENT RECORDS".center(80))
@@ -1184,7 +1180,6 @@ def view_patient_records():
             return
         else:
             print("Invalid choice. Please select a valid option.")
-
 # Manage patient information choices
 def manage_patient_information():
     print("=" * 80)
@@ -1207,7 +1202,6 @@ def manage_patient_information():
             break
         else:
             print("Invalid choice. Please select '1', '2', '3', or 'M'.")
-
 def display_patient_records():
     print("=" * 80)
     print("ALL PATIENTS".center(80), "\n")
