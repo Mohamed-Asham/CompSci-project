@@ -1609,196 +1609,282 @@ def cancel_gp_appointment(gp_email):
             print("Invalid input. Please enter a valid Slot ID.")
 
 # [ 3 ] Manage patient records
-ACCOUNTS_FILE = "accounts.json"
-MEDICAL_RECORDS_FILE = "medical_records.json"
-def load_accounts2():
-    if os.path.exists(ACCOUNTS_FILE):
-        with open(ACCOUNTS_FILE, "r") as file:
-            try:
-                return load(file)  # Load existing account data
-            except JSONDecodeError:
-                return {}  # Return empty dictionary if JSON is corrupted or empty
-    else:
-        return {}  # Return empty dictionary if the file doesn't exi
-def load_or_initialize_records():
-    if os.path.exists(MEDICAL_RECORDS_FILE):
-        with open(MEDICAL_RECORDS_FILE, "r") as file:
-            try:
-                # Try loading existing medical records
-                return load(file)
-            except JSONDecodeError:
+def view_patient_summary(gp_email):
+    print("=" * 80)
+    print("VIEW PATIENT SUMMARY".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
 
-                accounts = load_accounts2()
-                data_default = {"note": "", "date_created": None}
-                records = {}
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
 
-                for role, account_data in accounts.items():
-                    if role == "patient":
-                        for email in account_data.keys():
-                            records[email] = [data_default]
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
 
-                # Write the initialized records to the file
-                with open(MEDICAL_RECORDS_FILE, "w") as file_1:
-                    dump(records, file_1, indent=4)
+    # Select a patient
+    while True:
+        selection = input("\nEnter the Index of the patient to view summary or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information(gp_email)
+            return
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
 
-                return records  # Return the newly created records
-    else:
-        # If the file doesn't exist, initialize a new file
-        accounts = load_accounts2()
-        data_default = {"note": "", "date_created": None}
-        records = {}
-
-        # Populate medical records for patients only
-        for role, account_data in accounts.items():
-            if role == "patient":
-                for email in account_data.keys():
-                    records[email] = [data_default]
-
-        # Write to a new file
-        with open(MEDICAL_RECORDS_FILE, "w") as file:
-            dump(records, file, indent=4)
-
-        return records
-def save_medical_records(records):
-    try:
-        with open(MEDICAL_RECORDS_FILE, "w") as file:
-            dump(records, file, indent=4)  # Save with indentation for readability
-    except Exception as e:
-        print(f"Error saving medical records: {e}")
-def add_clinical_note(email, note):
-    # Get the current timestamp for the note
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Format as: YYYY-MM-DD HH:MM:SS
-
-    # Create a new note entry with the timestamp
-    note_entry = {
-        "note": note,
-        "date_created": timestamp
+    patient_details = patients[patient_email]
+    summary_data = {
+        "Full Name": f"{patient_details.get('name', 'Unknown')} {patient_details.get('surname', 'Unknown')}",
+        "Date of Birth": patient_details.get("date_of_birth", "Unknown"),
+        "Gender": patient_details.get("gender", "Unknown"),
+        "Email": patient_email,
+        "Address Line 1": patient_details.get("Address_Line_1", "Unknown"),
+        "Address Line 2": patient_details.get("Address_Line_2", "Unknown"),
+        "NHS Organ Donor Status": patient_details.get("NHS_organ_donor", "Unknown"),
+        "NHS Blood Donor Status": patient_details.get("NHS_blood_donor", "Unknown")
     }
 
-    # Load current medical records
-    medical_records = load_or_initialize_records()
+    # Reshape data to have two columns: Field and Value
+    df_summary = pandas.DataFrame(list(summary_data.items()), columns=["Field", "Value"])
 
-    if medical_records[email][0]["note"] == "" and medical_records[email][0]["date_created"] is None:
-        medical_records[email][0] = note_entry
-        with open(MEDICAL_RECORDS_FILE, "w") as file:
-            dump(medical_records, file, indent=4)
+    print("\nPatient Summary:")
+    print(tabulate.tabulate(df_summary, headers='keys', tablefmt='grid', showindex=False))
 
-    else:
-        medical_records[email].append(note_entry)
-
-
-    # Save the updated medical records
-    save_medical_records(medical_records)
-def add_patient_record(email):
+    input("\nPress Enter to return to Manage Patient Information.")
+    manage_patient_information(gp_email)
+def view_patient_journals(gp_email):
     print("=" * 80)
-    print("EDIT PATIENT RECORDS".center(80))
-    print("\nEnter 'H' to return to the homepage or R to view other patient records\n")
+    print("VIEW PATIENT JOURNALS".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
 
-    patient_email = input("Enter the patient's email: ").strip()
-    if patient_email.upper() == "H":
-        gp_page(email)
-        return
-    elif patient_email.upper() == "R":
-        display_patient_records(email)
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
 
-    registered_users = load_accounts2()
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
+
+    # Select a patient
     while True:
-        if patient_email not in registered_users["patient"]:
-            print("\nPatient not found.\n")
-            patient_email = input("Enter the patient's email: ").strip()
-            if patient_email.upper() == "H":
-                gp_page(email)
-                return
-        else:
-            break
-
-    note_1 = input("Enter the clinical note: ")
-
-    add_clinical_note(patient_email, note_1)
-
-
-
-
-    print("\nPatient record updated successfully.")
-    sleep(2)
-    gp_page(email)
-def display_patient_records(email):
-    print("=" * 80)
-    print("ALL PATIENTS".center(80), "\n")
-
-
-    # Load the JSON file
-    with open('accounts.json', 'r') as file:
-
-        database = load(file)
-        ptnt_table = [{"Name": patient["name"],
-                    "Surname": patient["surname"],
-                    "Birthdate": patient["date_of_birth"],
-                    "Email address": patient["email"]
-                       }
-                   for patient in database["patient"].values()
-                    ]
-        df_1 = pandas.DataFrame(ptnt_table)
-
-        # Display the table using tabulate
-        print(tabulate.tabulate(df_1.values, headers=df_1.columns, tablefmt="grid"))
-
-        while True:
-            ptn_email_add = input("\nEnter a patient's email address to view their record or M to return to main menu: ").strip()
-            if ptn_email_add == "M":
-                gp_page()
-            elif ptn_email_add not in database["patient"]:
-                print("\nEmail is not in the register!")
-            else:
-                print("\n")
-                break
-
-        patient_data = [{"Name": database["patient"][ptn_email_add]["name"],
-                    "Surname": database["patient"][ptn_email_add]["surname"],
-                    "Birthdate": database["patient"][ptn_email_add]["date_of_birth"],
-                    "Conditions": ", ".join(database["patient"][ptn_email_add]["conditions"])
-                         }
-                        ]
-        df_2 = pandas.DataFrame(patient_data)
-        print(tabulate.tabulate(df_2.values, headers=df_2.columns, tablefmt="grid"))
-
-
-        # Convert the JSON data to a list of dictionaries for the DataFrame
-        medical_records = load_or_initialize_records()
-
-        if isinstance(medical_records[ptn_email_add][0], list):
-            print("Nested list detected! Fix the structure.")
-            medical_records[ptn_email_add] = medical_records[ptn_email_add][0]
-        data = [
-            {
-                "Date": item["date_created"],
-                "Clinical Notes": item["note"]
-            }
-            for item in medical_records[ptn_email_add]
-        ]
-
-    # Create DataFrame
-    df = pandas.DataFrame(data)
-
-    # Display the table using tabulate
-    print(tabulate.tabulate(df.values, headers=df.columns, tablefmt="grid"))
-
-
-
-# Next step after seeing patient records
-    while True:
-        print("\n")
-        print("[ 1 ] Edit patient records")
-        print("[ M ] Return to main menu ")
-
-        choice_1 = input("Please choose an option: ").strip()
-        if choice_1 == "1":
-            add_patient_record(email)
+        selection = input("\nEnter the Index of the patient to view journals or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information(gp_email)
             return
-        elif choice_1.upper() == "M":
-            gp_page()
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
+
+    # Display patient's journals
+    patient_details = patients[patient_email]
+    journals = patient_details.get("journals", [])
+
+    if not journals:
+        print("\nNo journal entries found for this patient.")
+    else:
+        # Convert journals to DataFrame
+        df_journals = pandas.DataFrame(journals)
+        print("\nPatient Journals:")
+        print(tabulate.tabulate(df_journals, headers='keys', tablefmt='grid', showindex=False))
+
+    input("\nPress Enter to return to Manage Patient Information.")
+    manage_patient_information(gp_email)
+def view_patient_records(gp_email):
+    print("=" * 80)
+    print("VIEW PATIENT RECORDS".center(80))
+    print("\nEnter 'M' to return to the main menu\n")
+
+    # Load patient data
+    data = load_accounts()
+    patients = data.get("patient", {})
+
+    # Display list of patients
+    patient_list = []
+    for idx, (email, details) in enumerate(patients.items(), start=1):
+        patient_list.append({
+            "Index": idx,
+            "Email": email,
+            "Name": details.get("name", "Unknown"),
+            "Surname": details.get("surname", "Unknown"),
+            "Date of Birth": details.get("date_of_birth", "Unknown")
+        })
+    df_patients = pandas.DataFrame(patient_list)
+    print("List of Patients:")
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
+
+    # Select a patient
+    while True:
+        selection = input("\nEnter the Index of the patient to view records or 'M' to return: ").strip()
+        if selection.upper() == "M":
+            manage_patient_information(gp_email)
+            return
+        try:
+            selection = int(selection)
+            if 1 <= selection <= len(patient_list):
+                selected_patient = patient_list[selection - 1]
+                patient_email = selected_patient["Email"]
+                break
+            else:
+                print("Invalid selection. Please enter a valid Index.")
+        except ValueError:
+            print("Invalid input. Please enter a number corresponding to a patient.")
+
+    # Display patient's conditions
+    patient_details = patients[patient_email]
+    conditions = patient_details.get("conditions", [])
+    clinical_notes = patient_details.get("clinical_notes", [])
+
+    if not isinstance(clinical_notes, list):
+        clinical_notes = [{"date": "Unknown", "note": clinical_notes}]  # Backward compatibility
+
+    # Create DataFrame for conditions
+    df_conditions = pandas.DataFrame({"Conditions": conditions})
+    print("\nPatient Conditions:")
+    print(tabulate.tabulate(df_conditions, headers='keys', tablefmt='grid', showindex=False))
+
+    # Display clinical notes in tabular format
+    df_notes = pandas.DataFrame(clinical_notes)
+    print("\nClinical Notes:")
+    if not df_notes.empty:
+        print(tabulate.tabulate(df_notes, headers=['Date', 'Note'], tablefmt='grid', showindex=False))
+    else:
+        print("No clinical notes available.")
+
+    # Options to add or edit conditions and clinical notes
+    while True:
+        print("\nOptions:")
+        print("[ 1 ] Add condition")
+        print("[ 2 ] Edit conditions")
+        print("[ 3 ] Add clinical note")
+        print("[ M ] Return to Manage Patient Information")
+        choice = input("Select an option: ").strip().upper()
+        if choice == "1":
+            # Code to add condition
+            conditions_list = ["Anxiety", "Depression", "Autism", "PTSD", "Bipolar Disorder"]
+            print("\nAvailable Mental Conditions:")
+            for i, condition in enumerate(conditions_list, 1):
+                print(f"[ {i} ] {condition}")
+            print("[ 0 ] Custom condition")
+            selected_conditions = ""
+            while True:
+                choice_c = input("Select a condition by number (or press Enter to cancel): ").strip()
+                if choice_c == "":
+                    break
+                elif choice_c == "0":
+                    custom_condition = input("Enter a custom condition: ").strip()
+                    if custom_condition:
+                        selected_conditions = custom_condition
+                elif choice_c.isdigit() and 1 <= int(choice_c) <= len(conditions_list):
+                    selected_conditions = conditions_list[int(choice_c) - 1]
+                    break
+                else:
+                    print("Invalid choice. Try again.")
+
+            if selected_conditions:
+                conditions.append(selected_conditions)
+                patient_details["conditions"] = conditions
+                save_accounts(data)
+                print("Condition added successfully.")
+            else:
+                print("No condition entered.")
+        elif choice == "2":
+            # Code to edit conditions
+            if not conditions:
+                print("No conditions to edit.")
+                continue
+            print("\nCurrent Conditions:")
+            for idx, cond in enumerate(conditions, start=1):
+                print(f"[ {idx} ] {cond}")
+            cond_idx = input("Enter the number of the condition to edit: ").strip()
+            try:
+                cond_idx = int(cond_idx)
+                if 1 <= cond_idx <= len(conditions):
+                    new_value = input("Enter the replacement for the condition (or R to remove this condition): ").strip()
+                    if new_value.upper() == "R":
+                        del conditions[cond_idx - 1]
+                        patient_details["conditions"] = conditions
+                        save_accounts(data)
+                        print("Conditions list updated successfully.")
+                    elif new_value:
+                        conditions[cond_idx - 1] = new_value
+                        patient_details["conditions"] = conditions
+                        save_accounts(data)
+                        print("Conditions list updated successfully.")
+                else:
+                    print("Invalid selection.")
+            except ValueError:
+                print("Invalid input.")
+        elif choice == "3":
+            # Code to add clinical notes
+            new_note = input("Enter new clinical note: ").strip()
+            if new_note:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                clinical_notes.append({"date": timestamp, "note": new_note})
+                patient_details["clinical_notes"] = clinical_notes
+                save_accounts(data)
+                print("Clinical note added successfully.")
+            else:
+                print("No note entered.")
+        elif choice == "M":
+            manage_patient_information(gp_email)
+            return
         else:
-            print("Invalid input, please choose between: 1 or M")
+            print("Invalid choice. Please select a valid option.")
+def manage_patient_information(gp_email):
+    print("=" * 80)
+    print("MANAGE PATIENT INFORMATION".center(80))
+    print("[ 1 ] View patient records")
+    print("[ 2 ] View patient journals")
+    print("[ 3 ] View patient summary")
+    print("[ M ] Return to main menu")
+
+    while True:
+        choice = input("\nPlease select an option: ").strip().upper()
+        if choice == "1":
+            view_patient_records(gp_email)
+        elif choice == "2":
+            view_patient_journals(gp_email)
+        elif choice == "3":
+            view_patient_summary(gp_email)
+        elif choice == "M":
+            gp_page(gp_email)
+            break
+        else:
+            print("Invalid choice. Please select '1', '2', '3', or 'M'.")
 
 # [ 4 ] Check in/out patients
 
@@ -1890,7 +1976,7 @@ def gp_page(gp_email):
                     print("Please choose a valid option '1' , '2' , '3' or 'M'")
 
         elif choice1 == "3":
-            display_patient_records(gp_email)
+            manage_patient_information(gp_email)
         elif choice1 == "4":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()

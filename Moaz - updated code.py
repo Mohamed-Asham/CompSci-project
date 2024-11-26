@@ -984,7 +984,7 @@ def view_patient_summary():
         })
     df_patients = pandas.DataFrame(patient_list)
     print("List of Patients:")
-    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
 
     # Select a patient
     while True:
@@ -1003,7 +1003,6 @@ def view_patient_summary():
         except ValueError:
             print("Invalid input. Please enter a number corresponding to a patient.")
 
-    # Display patient's non-medical records
     patient_details = patients[patient_email]
     summary_data = {
         "Full Name": f"{patient_details.get('name', 'Unknown')} {patient_details.get('surname', 'Unknown')}",
@@ -1016,9 +1015,11 @@ def view_patient_summary():
         "NHS Blood Donor Status": patient_details.get("NHS_blood_donor", "Unknown")
     }
 
-    df_summary = pandas.DataFrame([summary_data])
+    # Reshape data to have two columns: Field and Value
+    df_summary = pandas.DataFrame(list(summary_data.items()), columns=["Field", "Value"])
+
     print("\nPatient Summary:")
-    print(tabulate.tabulate(df_summary, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(df_summary, headers='keys', tablefmt='grid', showindex=False))
 
     input("\nPress Enter to return to Manage Patient Information.")
     manage_patient_information()
@@ -1043,7 +1044,7 @@ def view_patient_journals():
         })
     df_patients = pandas.DataFrame(patient_list)
     print("List of Patients:")
-    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
 
     # Select a patient
     while True:
@@ -1072,7 +1073,7 @@ def view_patient_journals():
         # Convert journals to DataFrame
         df_journals = pandas.DataFrame(journals)
         print("\nPatient Journals:")
-        print(tabulate.tabulate(df_journals, headers='keys', tablefmt='grid'))
+        print(tabulate.tabulate(df_journals, headers='keys', tablefmt='grid', showindex=False))
 
     input("\nPress Enter to return to Manage Patient Information.")
     manage_patient_information()
@@ -1097,7 +1098,7 @@ def view_patient_records():
         })
     df_patients = pandas.DataFrame(patient_list)
     print("List of Patients:")
-    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(df_patients, headers='keys', tablefmt='grid', showindex=False))
 
     # Select a patient
     while True:
@@ -1116,38 +1117,66 @@ def view_patient_records():
         except ValueError:
             print("Invalid input. Please enter a number corresponding to a patient.")
 
-    # Display patient's conditions and clinical notes
+    # Display patient's conditions
     patient_details = patients[patient_email]
     conditions = patient_details.get("conditions", [])
-    clinical_notes = patient_details.get("clinical_notes", "None")
+    clinical_notes = patient_details.get("clinical_notes", [])
+
+    if not isinstance(clinical_notes, list):
+        clinical_notes = [{"date": "Unknown", "note": clinical_notes}]  # Backward compatibility
 
     # Create DataFrame for conditions
     df_conditions = pandas.DataFrame({"Conditions": conditions})
     print("\nPatient Conditions:")
-    print(tabulate.tabulate(df_conditions, headers='keys', tablefmt='grid'))
+    print(tabulate.tabulate(df_conditions, headers='keys', tablefmt='grid', showindex=False))
 
-    # Display clinical notes
+    # Display clinical notes in tabular format
+    df_notes = pandas.DataFrame(clinical_notes)
     print("\nClinical Notes:")
-    print(clinical_notes)
+    if not df_notes.empty:
+        print(tabulate.tabulate(df_notes, headers=['Date', 'Note'], tablefmt='grid', showindex=False))
+    else:
+        print("No clinical notes available.")
 
     # Options to add or edit conditions and clinical notes
     while True:
         print("\nOptions:")
         print("[ 1 ] Add condition")
         print("[ 2 ] Edit conditions")
-        print("[ 3 ] Edit clinical notes")
+        print("[ 3 ] Add clinical note")
         print("[ M ] Return to Manage Patient Information")
         choice = input("Select an option: ").strip().upper()
         if choice == "1":
-            new_condition = input("Enter the new condition: ").strip()
-            if new_condition:
-                conditions.append(new_condition)
+            # Code to add condition
+            conditions_list = ["Anxiety", "Depression", "Autism", "PTSD", "Bipolar Disorder"]
+            print("\nAvailable Mental Conditions:")
+            for i, condition in enumerate(conditions_list, 1):
+                print(f"[ {i} ] {condition}")
+            print("[ 0 ] Custom condition")
+            selected_conditions = ""
+            while True:
+                choice_c = input("Select a condition by number (or press Enter to cancel): ").strip()
+                if choice_c == "":
+                    break
+                elif choice_c == "0":
+                    custom_condition = input("Enter a custom condition: ").strip()
+                    if custom_condition:
+                        selected_conditions = custom_condition
+                elif choice_c.isdigit() and 1 <= int(choice_c) <= len(conditions_list):
+                    selected_conditions = conditions_list[int(choice_c) - 1]
+                    break
+                else:
+                    print("Invalid choice. Try again.")
+
+            if selected_conditions:
+                conditions.append(selected_conditions)
                 patient_details["conditions"] = conditions
                 save_accounts(data)
                 print("Condition added successfully.")
             else:
                 print("No condition entered.")
         elif choice == "2":
+            # Code to edit conditions
             if not conditions:
                 print("No conditions to edit.")
                 continue
@@ -1158,29 +1187,38 @@ def view_patient_records():
             try:
                 cond_idx = int(cond_idx)
                 if 1 <= cond_idx <= len(conditions):
-                    new_value = input("Enter the new value for the condition: ").strip()
-                    if new_value:
+                    new_value = input("Enter the replacement for the condition (or R to remove this condition): ").strip()
+                    if new_value.upper() == "R":
+                        del conditions[cond_idx - 1]
+                        patient_details["conditions"] = conditions
+                        save_accounts(data)
+                        print("Conditions list updated successfully.")
+                    elif new_value:
                         conditions[cond_idx - 1] = new_value
                         patient_details["conditions"] = conditions
                         save_accounts(data)
-                        print("Condition updated successfully.")
-                    else:
-                        print("No value entered.")
+                        print("Conditions list updated successfully.")
                 else:
                     print("Invalid selection.")
             except ValueError:
                 print("Invalid input.")
         elif choice == "3":
-            new_notes = input("Enter new clinical notes: ").strip()
-            patient_details["clinical_notes"] = new_notes
-            save_accounts(data)
-            print("Clinical notes updated successfully.")
+            # Code to add clinical notes
+            new_note = input("Enter new clinical note: ").strip()
+            if new_note:
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                clinical_notes.append({"date": timestamp, "note": new_note})
+                patient_details["clinical_notes"] = clinical_notes
+                save_accounts(data)
+                print("Clinical note added successfully.")
+            else:
+                print("No note entered.")
         elif choice == "M":
             manage_patient_information()
             return
         else:
             print("Invalid choice. Please select a valid option.")
-# Manage patient information choices
+
 def manage_patient_information():
     print("=" * 80)
     print("MANAGE PATIENT INFORMATION".center(80))
@@ -1869,12 +1907,3 @@ def call_function():
         print(f"Excpetion is : {e}")
 call_function()
 #=========================================================
-
-
-
-
-
-
-
-
-
