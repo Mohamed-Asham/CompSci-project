@@ -692,7 +692,7 @@ def journal_page(email_address):
             patients_page(email_address)
             break
         else:
-            print("Invalid choice, please select '1', '2' or 'H' ")
+            print("Invalid choice, please select '1', '2', '3', '4' or 'H' ")
 
 def new_journal_entry(email_address):
     print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
@@ -736,14 +736,14 @@ def view_journal_entries(email_address):
     if not journals:
         print("\nYou have no journal entries. ")
         while True:
-            new_journal = input("Would you like to write your first journal entry? (Y/N) ").strip().upper()
+            new_journal = input("\nWould you like to write your first journal entry? (Y/N) ").strip().upper()
             if new_journal == "Y":
                 new_journal_entry(email_address)
                 break
             elif new_journal == "N":
-                print("Returning to your homepage...")
+                print("Returning to your journals page...")
                 sleep(1)
-                patients_page(email_address)
+                journal_page(email_address)
                 break
             else:
                 print("Invalid choice. Please choose either Y or N")
@@ -884,7 +884,7 @@ def delete_journal_entries(email_address):
     print("\nCurrent entry: \n")
     print(selected_journal['entry'])
 
-    confirm= input("Are you sure you want to delete this entry? (Y/N) ").strip().upper()
+    confirm= input("\nAre you sure you want to delete this entry? (Y/N) ").strip().upper()
     if confirm == "Y":
         journals.remove(selected_journal)
         data["patient"][email_address]["journals"] = journals
