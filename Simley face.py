@@ -1,8 +1,6 @@
 import turtle
 
-# Global variable to store the selected mood
 selected_mood = None
-
 
 def on_click(x, y):
     global selected_mood
@@ -81,8 +79,6 @@ def draw_mood_tracker():
         # Write mood label inside the circle
         pen.goto(x, -20)
         pen.write(mood, align="center", font=("Arial", 10, "normal"))
-
-
 
     # Add description
     pen.goto(0, -70)
