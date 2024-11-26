@@ -1,17 +1,21 @@
-import re
 #=======================Modules=============================
 from importlib import import_module
 from time import sleep
 from sys import exit, executable
 from re import match
 from random import randint
-from datetime import datetime
+from datetime import datetime, timedelta, date
 from json import load, dump, JSONDecodeError
 from platform import system
 import os
 import subprocess
+import sqlite3
 
-
+# Must run to work with SQLite
+sqlite3.register_adapter(date, lambda d: d.isoformat())
+sqlite3.register_adapter(datetime, lambda d: d.isoformat())
+sqlite3.register_converter("DATE", lambda s: datetime.strptime(s.decode(), "%Y-%m-%d").date())
+sqlite3.register_converter("DATETIME", lambda s: datetime.strptime(s.decode(), "%Y-%m-%dT%H:%M:%S"))
 # List of required non-standard packages
 required_packages = ["pyfiglet", "termcolor", "pandas", "tabulate"]
 def ensure_pip_installed():
@@ -373,10 +377,202 @@ def delete_accounts():
 #====================Patient Homepage======================
 
 #[ 1 ] Book and manage appointments
+def view_patient_schedule(patient_email):
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
 
+    query = """
+    SELECT id, date, time_slot, appointment_status
+    FROM appointments
+    WHERE patient_email = ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (patient_email,))
+    rows = cursor.fetchall()
+
+    if rows:
+        print("Your Appointments:")
+        table = []
+        headers = ["Slot ID", "Date", "Time Slot", "Status"]
+
+        for row in rows:
+            table.append(row)
+
+        print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+        conn.close()
+
+        print("[ 1 ] Cancel appointment")
+        print("[ M ] Return to Main menu")
+        while True:
+            c = input("\nPlease select an option: ")
+            if c.upper() == "M":
+                patients_page(patient_email)
+            elif c == "1":
+                cancel_patient_appointment(patient_email)
+
+    print("You have no appointments booked.\nReturning to main menu...")
+    conn.close()
+    sleep(2)
+    patients_page(patient_email)
+def book_appointment(patient_email, gp_email):
+    """
+    Allows a patient to book an appointment with their assigned GP.
+    Displays the GP's schedule with time slots as rows and days as columns,
+    marking unavailable days as 'Unavailable' and showing Slot IDs for available slots.
+    The patient books an appointment by selecting the Slot ID.
+    """
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    # Check if the patient already has an appointment
+    cursor.execute("""
+    SELECT id FROM appointments WHERE patient_email = ?;
+    """, (patient_email,))
+    existing_appointment = cursor.fetchone()
+
+    if existing_appointment:
+        print("You already have an appointment booked. Cancel it first to book a new one.")
+        conn.close()
+        patients_page(patient_email)
+
+    # Ask for the start date of the week
+    while True:
+        start_date_input = input("Enter the start date of the week (YYYY-MM-DD): ").strip()
+        try:
+            start_date = datetime.strptime(start_date_input, "%Y-%m-%d").date()
+            break
+        except ValueError:
+            print("Invalid date format. Please use YYYY-MM-DD.")
+            conn.close()
+
+    # Generate the week schedule (7 days from the start date)
+    end_date = start_date + timedelta(days=6)
+    schedule = {}  # Dictionary to store time slots for each date
+
+    # Query for available slots for the GP in the given week
+    query = """
+    SELECT id, date, time_slot
+    FROM appointments
+    WHERE patient_email IS NULL 
+      AND appointment_status = 'Available'
+      AND gp_email = ?
+      AND date BETWEEN ? AND ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email, str(start_date), str(end_date)))
+    available_slots = cursor.fetchall()
+
+    if not available_slots:
+        print("No available appointments for the selected week.\nReturning to main menu...")
+        conn.close()
+        sleep(2)
+        patients_page(patient_email)
+
+    time_slots = sorted(set(slot[2] for slot in available_slots))  # Unique time slots
+    for time_slot in time_slots:
+        schedule[time_slot] = {str(start_date + timedelta(days=i)): "Unavailable" for i in range(7)}
+
+    for slot_id, date, time_slot in available_slots:
+        schedule[time_slot][date] = f"[{slot_id}]"
+
+    # Display the schedule in tabular format
+    headers = ["Time Slot"] + [str(start_date + timedelta(days=i)) for i in range(7)]
+    table = [[time_slot] + [schedule[time_slot][date] for date in headers[1:]] for time_slot in time_slots]
+    print("\nGP's Weekly Schedule:")
+    print(tabulate.tabulate(table, headers=headers, tablefmt="grid"))
+
+    # Allow patient to select a slot to book by Slot ID
+    while True:
+        slot_id_input = input("Enter the [Slot ID] to book (or 'Q' to quit): ").strip()
+        if slot_id_input.upper() == 'Q':
+            print("Booking process cancelled.\nReturning to Main menu...")
+            patients_page(patient_email)
+
+        try:
+            slot_id = int(slot_id_input)
+            cursor.execute("""
+                SELECT id FROM appointments 
+                WHERE id = ? AND gp_email = ? AND patient_email IS NULL AND appointment_status = 'Available';
+            """, (slot_id, gp_email))
+            valid_slot = cursor.fetchone()
+
+            if valid_slot:
+                cursor.execute("""
+                    UPDATE appointments
+                    SET patient_email = ?, appointment_status = 'Requested'
+                    WHERE id = ?;
+                """, (patient_email, slot_id))
+                conn.commit()
+                print(f"Appointment booked successfully! [Slot ID]: {slot_id}\nreturning to Main menu...")
+                sleep(2)
+                patients_page(patient_email)
+            else:
+                print("Invalid Slot ID or the slot is no longer available. Try again.")
+        except ValueError:
+            print("Invalid input. Please enter a valid Slot ID.")
+
+    conn.close()
+def cancel_patient_appointment(patient_email):
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    # Query to fetch the patient's appointment
+    query = """
+    SELECT id, date, time_slot, gp_email, appointment_status
+    FROM appointments
+    WHERE patient_email = ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (patient_email,))
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("You have no booked appointments to cancel.\nReturning to Main menu...")
+        conn.close()
+        sleep(2)
+        patients_page(patient_email)
+
+    # Display the appointment(s) in a table
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "GP Email", "Status"]
+
+    for row in rows:
+        table.append(row)
+
+    print("\nYour Booked Appointments (Requested and Confirmed):")
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+
+    # Allow patient to select an appointment to cancel
+    valid_ids = {row[0] for row in rows}  # Set of valid Slot IDs
+    while True:
+        cancel = input("\nEnter Slot ID to cancel (or 'Q' to quit): ").strip()
+        if cancel.upper() == 'Q':
+            print("\nReturning to Main menu...")
+            conn.close()
+            patients_page(patient_email)
+
+        try:
+            slot_id = int(cancel)
+            if slot_id in valid_ids:
+                confirm = input(f"Are you sure you want to cancel appointment {slot_id}? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    cursor.execute("""
+                    UPDATE appointments
+                    SET patient_email = NULL, appointment_status = 'Available'
+                    WHERE id = ? AND patient_email = ?;
+                    """, (slot_id, patient_email))
+                    conn.commit()
+                    print(f"Appointment {slot_id} has been canceled.")
+                    valid_ids.remove(slot_id)
+                else:
+                    print("Cancellation aborted.")
+            else:
+                print("Invalid Slot ID. Please choose a valid Slot ID from the table.")
+        except ValueError:
+            print("Invalid input. Please enter a valid Slot ID.")
 
 #[ 2 ] Change default GP
-
 
 #[ 3 ] Access meditation help & tips and more
 resources = {
@@ -463,7 +659,7 @@ def post_selection(category_name, email_address):
         user_input = input("Enter the number corresponding to your choice or type 'back': ").strip().lower()
 
         if user_input == "1":
-            return category_menu(category_name)
+            return category_menu(category_name, email_address)
         elif user_input == "2":
             mhresources(email_address=email_address)
         elif user_input.upper() == "B":
@@ -471,6 +667,74 @@ def post_selection(category_name, email_address):
         else:
             print("Invalid input. Please enter a valid option.")
 
+#[ 4 ] Access journal entries
+def journal_page(email_address):
+    while True:
+        print("="* 80)
+        print("JOURNALS PAGE".center(80))
+        print("[ 1 ] View previous entries")
+        print("[ 2 ] Make a new journal entry")
+        print("[ H ] Return to your homepage")
+        choice= input("\nPlease select an option: ").strip().upper()
+        if choice == "1":
+            view_journal_entries(email_address)
+        elif choice == "2":
+            new_journal_entry(email_address)
+        elif choice == "H":
+            print("Returning to your homepage...")
+            sleep(1)
+            patients_page(email_address)
+            break
+        else:
+            print("Invalid choice, please select '1', '2' or 'H' ")
+def new_journal_entry(email_address):
+    print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
+    entry_line = []
+    while True:
+        line = input()
+        if line.strip().upper() == "SAVE":
+            break
+        else:
+            entry_line.append(line)
+    entry_text = "\n".join(entry_line)
+    if not entry_text.strip():
+        print("Empty journal entry. Not saved")
+        return
+
+    entry_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    data=load_accounts()
+    patient_account = data["patient"][email_address]
+    journal_entry = {
+        "date": entry_date,
+        "entry": entry_text
+    }
+
+    if 'journals' not in patient_account:
+        patient_account['journals'] = []
+    patient_account['journals'].append(journal_entry)
+
+
+    save_accounts(data, mode= 'override')
+
+    print("Your journal entry has been saved")
+    print("Returning to your journals page... ")
+    sleep(1)
+    journal_page(email_address)
+def view_journal_entries(email_address):
+    data=load_accounts()
+    patient_account= data["patient"][email_address]
+    journals = patient_account.get("journals", [] )
+    if not journals:
+        print("\nYou have no journal entries. ")
+        return
+    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
+
+    print("\nYour Journal Entries:")
+    for idx, journal in enumerate(journals_sorted, start=1):
+        print(f"\nEntry {idx} - Date: {journal['date']}")
+        print("-" * 40)
+        print(journal['entry'])
+        print("-" * 40)
 
 # [ 5 ] Change patient details
 def update_account_page(email_address):
@@ -776,78 +1040,6 @@ def update_account_page(email_address):
             break
         elif edit_again!= "y":
             print("Returning to the edit menu")
-
-
-#[ 4 ] Access journal entries
-def journal_page(email_address):
-    while True:
-        print("="* 80)
-        print("JOURNALS PAGE".center(80))
-        print("[ 1 ] View previous entries")
-        print("[ 2 ] Make a new journal entry")
-        print("[ H ] Return to your homepage")
-        choice= input("\nPlease select an option: ").strip().upper()
-        if choice == "1":
-            view_journal_entries(email_address)
-        elif choice == "2":
-            new_journal_entry(email_address)
-        elif choice == "H":
-            print("Returning to your homepage...")
-            sleep(1)
-            patients_page(email_address)
-            break
-        else:
-            print("Invalid choice, please select '1', '2' or 'H' ")
-
-def new_journal_entry(email_address):
-    print("\nPlease write your journal entry. Type 'SAVE' on a new line to save your entry. ")
-    entry_line = []
-    while True:
-        line = input()
-        if line.strip().upper() == "SAVE":
-            break
-        else:
-            entry_line.append(line)
-    entry_text = "\n".join(entry_line)
-    if not entry_text.strip():
-        print("Empty journal entry. Not saved")
-        return
-
-    entry_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    data=load_accounts()
-    patient_account = data["patient"][email_address]
-    journal_entry = {
-        "date": entry_date,
-        "entry": entry_text
-    }
-
-    if 'journals' not in patient_account:
-        patient_account['journals'] = []
-    patient_account['journals'].append(journal_entry)
-
-
-    save_accounts(data, mode= 'override')
-
-    print("Your journal entry has been saved")
-    print("Returning to your journals page... ")
-    sleep(1)
-    journal_page(email_address)
-
-def view_journal_entries(email_address):
-    data=load_accounts()
-    patient_account= data["patient"][email_address]
-    journals = patient_account.get("journals", [] )
-    if not journals:
-        print("\nYou have no journal entries. ")
-        return
-    journals_sorted = sorted(journals, key=lambda x: datetime.strptime(x['date'], "%Y-%m-%d %H:%M:%S"))
-
-    print("\nYour Journal Entries:")
-    for idx, journal in enumerate(journals_sorted, start=1):
-        print(f"\nEntry {idx} - Date: {journal['date']}")
-        print("-" * 40)
-        print(journal['entry'])
-        print("-" * 40)
 #==========================================================
 
 
@@ -856,7 +1048,430 @@ def view_journal_entries(email_address):
 
 
 # [ 2 ] Manage appointments
+def setup_database():
+    """
+    Sets up the database with the appointments table.
+    Creates the table if it doesn't exist.
+    """
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
 
+    # Create the appointments table if it doesn't exist
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS appointments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        gp_email TEXT NOT NULL,
+        patient_email TEXT, -- Null if the slot is not booked
+        date TEXT NOT NULL,
+        time_slot TEXT NOT NULL,
+        appointment_status TEXT NOT NULL, -- "Booked" or "Available"
+        FOREIGN KEY (gp_email) REFERENCES gp (email)
+    );
+    """)
+    conn.commit()
+    conn.close()
+def initialize_database():
+    """
+    Initializes the database. Checks if the database file exists;
+    if not, sets up the database structure.
+    """
+    if not os.path.exists("appointments.db"):
+        setup_database()  # Run setup if the file does not exist
+        print("Database initialized successfully.")
+    else:
+        print("Loading current appointments database...")
+        sleep(1)
+        print("Done!")
+def update_time_slots():
+    """
+    Updates the database to maintain 90 days of time slots.
+    - Deletes slots for past dates.
+    - Adds new days to ensure 90 days of future slots.
+    """
+    connection = sqlite3.connect("appointments.db")
+    cursor = connection.cursor()
+
+    # Get the current date
+    today = datetime.now().date()
+
+    # Delete past slots
+    cursor.execute("""
+        DELETE FROM appointments
+        WHERE date < ?
+    """, (str(today),))
+    print(f"Deleted past time slots before {today}.")
+
+    # Find the latest date currently in the database
+    cursor.execute("""
+        SELECT MAX(date) FROM appointments
+    """)
+    latest_date = cursor.fetchone()[0]
+
+    # Calculate the number of days to add
+    if latest_date:
+        latest_date = datetime.strptime(latest_date, "%Y-%m-%d").date()
+    else:
+        latest_date = today - timedelta(days=1)  # If no slots exist, start from today
+
+    days_to_add = (today + timedelta(days=90)) - latest_date
+
+    # Add new days to ensure 90 days of slots
+    if days_to_add.days > 0:
+        for day in (latest_date + timedelta(days=i + 1) for i in range(days_to_add.days)):
+            # Skip weekends
+            if day.weekday() in (5, 6):
+                continue
+
+            # Add new slots for this date for all GPs
+            cursor.execute("""
+                SELECT DISTINCT gp_email FROM appointments
+            """)
+            gp_emails = [row[0] for row in cursor.fetchall()]
+
+            time_slots = [f"{hour:02d}:{minute:02d}" for hour in range(9, 17) for minute in (0, 30)]
+            for gp_email in gp_emails:
+                for slot in time_slots:
+                    cursor.execute("""
+                        INSERT INTO appointments (date, time_slot, gp_email, patient_email, appointment_status)
+                        VALUES (?, ?, ?, NULL, "Available")
+                    """, (str(day), slot, gp_email))
+        print(f"Added {days_to_add.days} new days of slots up to {today + timedelta(days=90)}.")
+
+    # Commit changes and close the connection
+    connection.commit()
+    connection.close()
+def initialize_and_populate_new_gp_slots():
+    """
+    Initializes and populates time slots for GPs with no existing slots in the database.
+    """
+    connection = sqlite3.connect("appointments.db")
+    cursor = connection.cursor()
+
+    # Get all GP emails
+    with open("accounts.json", "r") as f:
+        accounts = load(f)
+        gp_emails = [gp["email"] for gp in accounts["gp"].values()]
+
+    # Get GPs already in the database
+    cursor.execute("""
+        SELECT DISTINCT gp_email FROM appointments
+    """)
+    existing_gps = {row[0] for row in cursor.fetchall()}
+
+    # Filter GPs without existing slots
+    new_gps = set(gp_emails) - existing_gps
+
+    # Populate time slots for each new GP
+    start_date = datetime.now().date()
+    end_date = start_date + timedelta(days=90)
+
+    for gp_email in new_gps:
+        print(f"Populating slots for new GP: {gp_email}")
+        for day in (start_date + timedelta(days=i) for i in range((end_date - start_date).days)):
+            # Skip weekends
+            if day.weekday() in (5, 6):
+                continue
+
+            # Add new slots for this date
+            time_slots = [f"{hour:02d}:{minute:02d}" for hour in range(9, 17) for minute in (0, 30)]
+            for slot in time_slots:
+                cursor.execute("""
+                    INSERT INTO appointments (date, time_slot, gp_email, patient_email, appointment_status)
+                    VALUES (?, ?, ?, NULL, "Available")
+                """, (str(day), slot, gp_email))
+        print(f"Time slots populated for {gp_email} from {start_date} to {end_date}.")
+
+    # Commit changes and close the connection
+    connection.commit()
+    connection.close()
+def view_gp_schedule(gp_email):
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email,))
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        print("No appointments scheduled.\nReturning to Main menu...")
+        sleep(2)
+        gp_page(gp_email)
+
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "Patient Email", "Status"]
+
+    for row in rows:
+        table.append(row)
+
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+    print("\n[ 1 ] View by week")
+    print("[ M ] Return to Main menu")
+    while True:
+        c2 = input("\nPlease choose an option: ")
+        if c2.upper() == "M":
+            gp_page(gp_email)
+        elif c2 == "1":
+            view_gp_schedule_by_week(gp_email)
+        else:
+            print("Please choose a valid option '1' or 'M'")
+def view_gp_schedule_by_week(gp_email):
+    """
+    Allows the GP to view their schedule for a specific week, starting from a chosen day.
+    Displays the schedule in a 5-day format with time slots and patient emails.
+    """
+    # Ask the GP for the start date of the week
+    while True:
+        try:
+            start_date_str = input("Enter the start date of the week (YYYY-MM-DD): ").strip()
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            break
+        except ValueError:
+            print("Invalid date format. Please enter the date in YYYY-MM-DD format.")
+
+
+    end_date = start_date + timedelta(days=4)  # End date is 4 days after the start date
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    # Query appointments for the given GP and the week (5 days)
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ? AND date BETWEEN ? AND ?
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email, start_date, end_date))
+    rows = cursor.fetchall()
+    conn.close()
+
+    if not rows:
+        print(f"No appointments scheduled for the week starting {start_date}.\n")
+        print("[ 1 ] View a different week schedule")
+        print("[ M ] Return to Main menu")
+        while True:
+            c4 = input("Please select an option: ")
+            if c4.upper() == "M":
+                gp_page(gp_email)
+            elif c4 == "1":
+                view_patient_schedule(gp_email)
+            else:
+                print("Please choose a valid option '1' or 'M'")
+
+    # Prepare the schedule in a week-view format (5 days)
+    schedule = {}
+    for row in rows:
+        slot_id, date, time_slot, patient_email, appointment_status = row
+        if date not in schedule:
+            schedule[date] = {}
+        schedule[date][time_slot] = patient_email if patient_email else None
+
+    # Generate a 5-day table to view the schedule
+    headers = ["Time Slot", *[start_date + timedelta(days=i) for i in range(7)]]
+    table = []
+
+    # Define the full list of time slots, including 16:30
+    time_slots = ['09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30']
+
+    for time_slot in time_slots:
+        row = [time_slot]
+        for day in range(7):
+            date_to_check = start_date + timedelta(days=day)
+            email = schedule.get(date_to_check, {}).get(time_slot, None)
+            if email:
+                row.append(f"{email}")
+            else:
+                row.append("")
+        table.append(row)
+
+    # Print the schedule
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid', stralign='center'))
+    print("\n[ 1 ] To view a different week")
+    print("[ M ] Return to main menu")
+    while True:
+        c3 = input("Please select an option: ")
+        if c3.upper() == "M":
+            gp_page(gp_email)
+        elif c3 == "1":
+            view_gp_schedule_by_week(gp_email)
+        else:
+            print("Please choose a valid option '1' or 'M'")
+def confirm_appointments(gp_email):
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    query = """
+    SELECT id, date, time_slot, patient_email
+    FROM appointments
+    WHERE gp_email = ? AND appointment_status = 'Requested'
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email,))
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("No requested appointments to confirm.\nReturning to Main menu...")
+        conn.close()
+        gp_page(gp_email)
+
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "Patient Email"]
+
+    for row in rows:
+        table.append(row)
+
+    print("\nRequested Appointments:")
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+
+    # Allow GP to confirm appointments
+    valid_ids = {row[0] for row in rows}  # Set of valid Slot IDs
+    while True:
+        confirm = input("\nEnter [Slot ID] to confirm (or 'Q' to quit): ").strip()
+        if confirm.upper() == 'Q':
+            conn.close()
+            print("\nReturning to Main menu...")
+            sleep(2)
+            gp_page(gp_email)
+        else:
+            try:
+                slot_id = int(confirm)
+                if slot_id in valid_ids:
+                    cursor.execute("""
+                    UPDATE appointments
+                    SET appointment_status = 'Confirmed'
+                    WHERE id = ? AND gp_email = ?;
+                    """, (slot_id, gp_email))
+                    conn.commit()
+                    print(f"Appointment [{slot_id}] confirmed.")
+                    # Remove the confirmed ID from valid_ids to avoid re-confirming it
+                    valid_ids.remove(slot_id)
+                else:
+                    print("Invalid Slot ID. Please choose a valid [Slot ID] from the table.")
+            except ValueError:
+                print("Invalid input. Please enter a valid [Slot ID].")
+def view_upcoming_appointments(gp_email):
+    """
+    Allows a GP to view all upcoming confirmed and requested appointments in a tabular format.
+    """
+    import sqlite3
+    from datetime import datetime
+    import tabulate
+    from time import sleep
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    # Query to fetch upcoming confirmed and requested appointments for the GP
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ? AND appointment_status IN ('Confirmed', 'Requested') AND date >= ?
+    ORDER BY date, time_slot;
+    """
+    today = datetime.now().strftime('%Y-%m-%d')
+    cursor.execute(query, (gp_email, today))
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("No upcoming appointments found.\nReturning to Main menu...")
+        conn.close()
+        sleep(2)
+        gp_page(gp_email)
+
+    # Display confirmed and requested appointments in a table
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "Patient Email", "Status"]
+
+    for row in rows:
+        table.append(row)
+
+    print("\nUpcoming Appointments (Confirmed and Requested):")
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+    conn.close()
+
+    print(f"\n")
+    print("[ 1 ] Confirm appointments")
+    print("[ 2 ] Cancel appointments")
+    print("[ M ] Return to Main menu")
+    while True:
+        c5 = input("Please select an option: ")
+        if c5.upper() == "M":
+            gp_page(gp_email)
+        elif c5 == "1":
+            confirm_appointments(gp_email)
+        elif c5 == "2":
+            cancel_gp_appointment(gp_email)
+        else:
+            print("Please choose a valid option '1' , '2' or 'M'")
+
+
+def cancel_gp_appointment(gp_email):
+
+    conn = sqlite3.connect('appointments.db')
+    cursor = conn.cursor()
+
+    query = """
+    SELECT id, date, time_slot, patient_email, appointment_status
+    FROM appointments
+    WHERE gp_email = ? AND patient_email IS NOT NULL
+    ORDER BY date, time_slot;
+    """
+    cursor.execute(query, (gp_email,))
+    rows = cursor.fetchall()
+
+    if not rows:
+        print("No booked appointments found to cancel.\nReturning to Main menu...")
+        conn.close()
+        sleep(2)
+        gp_page(gp_email)
+
+    # Display appointments in a table
+    table = []
+    headers = ["Slot ID", "Date", "Time Slot", "Patient Email", "Status"]
+
+    for row in rows:
+        table.append(row)
+
+    print("\nBooked Appointments (Requested or Confirmed):")
+    print(tabulate.tabulate(table, headers=headers, tablefmt='grid'))
+
+    # Allow GP to select an appointment to cancel
+    valid_ids = {row[0] for row in rows}  # Set of valid Slot IDs
+    while True:
+        cancel = input("\nEnter [Slot ID] to cancel (or 'Q' to quit): ").strip()
+        if cancel.upper() == 'Q':
+            print("\nReturning to Main menu...")
+            conn.close()
+            sleep(2)
+            gp_page(gp_email)
+
+        try:
+            slot_id = int(cancel)
+            if slot_id in valid_ids:
+                confirm = input(f"Are you sure you want to cancel appointment [{slot_id}]? (y/n): ").strip().lower()
+                if confirm == 'y':
+                    cursor.execute("""
+                    UPDATE appointments
+                    SET patient_email = NULL, appointment_status = 'Available'
+                    WHERE id = ? AND gp_email = ?;
+                    """, (slot_id, gp_email))
+                    conn.commit()
+                    print(f"Appointment [{slot_id}] has been canceled.")
+                    valid_ids.remove(slot_id)
+                else:
+                    print("Cancellation aborted.")
+            else:
+                print("Invalid Slot ID. Please choose a valid Slot ID from the table.")
+        except ValueError:
+            print("Invalid input. Please enter a valid Slot ID.")
 
 # [ 3 ] Manage patient records
 ACCOUNTS_FILE = "accounts.json"
@@ -877,12 +1492,11 @@ def load_or_initialize_records():
                 # Try loading existing medical records
                 return load(file)
             except JSONDecodeError:
-                # If the file is empty or corrupted, initialize it
+
                 accounts = load_accounts2()
                 data_default = {"note": "", "date_created": None}
-                records = {}  # Create a dictionary for the medical records
+                records = {}
 
-                # Populate medical records for patients only
                 for role, account_data in accounts.items():
                     if role == "patient":
                         for email in account_data.keys():
@@ -940,17 +1554,17 @@ def add_clinical_note(email, note):
 
     # Save the updated medical records
     save_medical_records(medical_records)
-def add_patient_record():
+def add_patient_record(email):
     print("=" * 80)
     print("EDIT PATIENT RECORDS".center(80))
     print("\nEnter 'H' to return to the homepage or R to view other patient records\n")
 
     patient_email = input("Enter the patient's email: ").strip()
     if patient_email.upper() == "H":
-        gp_page()
+        gp_page(email)
         return
     elif patient_email.upper() == "R":
-        display_patient_records()
+        display_patient_records(email)
 
     registered_users = load_accounts2()
     while True:
@@ -958,7 +1572,7 @@ def add_patient_record():
             print("\nPatient not found.\n")
             patient_email = input("Enter the patient's email: ").strip()
             if patient_email.upper() == "H":
-                gp_page()
+                gp_page(email)
                 return
         else:
             break
@@ -972,8 +1586,8 @@ def add_patient_record():
 
     print("\nPatient record updated successfully.")
     sleep(2)
-    gp_page()
-def display_patient_records():
+    gp_page(email)
+def display_patient_records(email):
     print("=" * 80)
     print("ALL PATIENTS".center(80), "\n")
 
@@ -1044,13 +1658,12 @@ def display_patient_records():
 
         choice_1 = input("Please choose an option: ").strip()
         if choice_1 == "1":
-            add_patient_record()
+            add_patient_record(email)
             return
         elif choice_1.upper() == "M":
             gp_page()
         else:
             print("Invalid input, please choose between: 1 or M")
-
 
 # [ 4 ] Check in/out patients
 
@@ -1073,12 +1686,27 @@ def patients_page(email_address):
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ").strip()
+        choice = input("\nPlease select an option: ").strip()
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            print("[ 1 ] View upcoming appointments")
+            print("[ 2 ] Book an appointment")
+            print("[ 3 ] Cancel appointment")
+            print("[ M ] Return to Main menu")
+            while True:
+                choice1 = input("\nPlease select an option: ")
+                if choice1.upper() == "M":
+                    patients_page(email_address=email_address)
+                elif choice1 == "1":
+                    view_patient_schedule(email_address)
+                elif choice1 == "2":
+                    book_appointment(email_address, "gp1@gmail.com") # Need to wait for GP-Patient pairings
+                elif choice1 == "3":
+                    cancel_patient_appointment(email_address)
+                else:
+                    print("Please choose a valid option '1' , '2' , '3' or 'M'")
+
         elif choice == "2":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
@@ -1090,7 +1718,7 @@ def patients_page(email_address):
             update_account_page(email_address=email_address)
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
-def gp_page():
+def gp_page(gp_email):
     print("=" * 80)
     print("GP HOMEPAGE".center(80))
     print(termcolor.colored("Welcome, GP. Your dedication helps patients achieve their best mental health.".center(80), "green"))
@@ -1102,21 +1730,36 @@ def gp_page():
     print("[ X ] Logout")
 
     while True:
-        choice = input("\nPlease select and option: ").strip()
-        if choice.upper() == "X":
+        choice1 = input("\nPlease select and option: ").strip()
+        if choice1.upper() == "X":
             login_menu()
-        elif choice == "1":
+        elif choice1 == "1":
+            view_gp_schedule(gp_email)
+        elif choice1 == "2":
+            print("\n")
+            print("[ 1 ] View upcoming appointments")
+            print("[ 2 ] Confirm appointments")
+            print("[ 3 ] Cancel appointments")
+            print("[ M ] Return to Main menu")
+            while True:
+                c6 = input("Please select an option: ")
+                if c6.upper() == "M":
+                    gp_page(gp_email)
+                elif c6 == "1":
+                    view_upcoming_appointments(gp_email)
+                elif c6 == "2":
+                    confirm_appointments(gp_email)
+                elif c6 == "3":
+                    cancel_gp_appointment(gp_email)
+                else:
+                    print("Please choose a valid option '1' , '2' , '3' or 'M'")
+
+        elif choice1 == "3":
+            display_patient_records(gp_email)
+        elif choice1 == "4":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
-        elif choice == "2":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
-        elif choice == "3":
-            display_patient_records()
-        elif choice == "4":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
-        elif choice == "5":
+        elif choice1 == "5":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         else:
@@ -1561,7 +2204,7 @@ def login_user(role):
                 if role == "patient":
                     patients_page(email_address=email_address)
                 elif role == "gp":
-                    gp_page()
+                    gp_page(email_address)
                 elif role == "admin":
                     admins_page()
                 return
@@ -1636,13 +2279,15 @@ def call_function():
     try:
         ensure_pip_installed()
         install_modules()
+        initialize_database()
+        initialize_and_populate_new_gp_slots()
+        update_time_slots()
         header()
         main_menu()
     except Exception as e:
         print(f"Excpetion is : {e}")
 call_function()
 #=========================================================
-
 
 
 
