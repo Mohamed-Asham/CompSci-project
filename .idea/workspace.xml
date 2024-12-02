@@ -4,7 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="9fab4401-5037-4949-b16c-a413b26608f3" name="Changes" comment="" />
+    <list default="true" id="9fab4401-5037-4949-b16c-a413b26608f3" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/CompSci-project.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/CompSci-project.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -46,22 +50,24 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.COMBINED CODE.executor": "Run",
-    "Python.Calendar.executor": "Run",
-    "Python.Combined Asham X Mohamed.executor": "Run",
-    "Python.Compsci project.executor": "Run",
-    "Python.Moaz - updated code.executor": "Run",
-    "Python.Simley face.executor": "Run",
-    "Python.mental_health_resources.executor": "Run",
-    "Python.myproject.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Users/sanji/OneDrive/Documents/GitHub/CompSci-project",
-    "node.js.selected.package.tslint": "(autodetect)"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.COMBINED CODE.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Calendar.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Combined Asham X Mohamed.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Compsci project.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Moaz - updated code.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Simley face.executor&quot;: &quot;Run&quot;,
+    &quot;Python.mental_health_resources.executor&quot;: &quot;Run&quot;,
+    &quot;Python.myproject.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/sanji/OneDrive/Documents/GitHub/CompSci-project&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\sanji\OneDrive\Documents\GitHub\CompSci-project" />
@@ -95,7 +101,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-python-sdk-98f27166c754-ba05f1cad1b1-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.21829.153" />
+        <option value="bundled-python-sdk-d7ad00fb9fc3-c546a90a8094-com.jetbrains.pycharm.community.sharedIndexes.bundled-PC-242.23726.102" />
       </set>
     </attachedChunks>
   </component>
