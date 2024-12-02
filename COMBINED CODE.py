@@ -437,7 +437,6 @@ def book_appointment(patient_email, gp_email):
             break
         except ValueError:
             print("Invalid date format. Please use YYYY-MM-DD.")
-            conn.close()
 
     end_date = start_date + timedelta(days=6)
     schedule = {}  # Dictionary to store time slots for each date
@@ -1340,17 +1339,13 @@ def initialize_database():
     """
     if not os.path.exists("appointments.db"):
         setup_database()  # Run setup if the file does not exist
-        print("Database initialized successfully.")
-    else:
-        print("Loading current appointments database...")
-        sleep(1)
-        print("Done!")
+        #print("Database initialized successfully.")
+    #else:
+        #print("Loading current appointments database...")
+        #sleep(1)
+        #print("Done!")
 def update_time_slots():
-    """
-    Updates the database to maintain 90 days of time slots.
-    - Deletes slots for past dates.
-    - Adds new days to ensure 90 days of future slots.
-    """
+
     connection = sqlite3.connect("appointments.db")
     cursor = connection.cursor()
 
@@ -1362,9 +1357,8 @@ def update_time_slots():
         DELETE FROM appointments
         WHERE date < ?
     """, (str(today),))
-    print(f"Deleted past time slots before {today}.")
+    #print(f"Deleted past time slots before {today}.")
 
-    # Find the latest date currently in the database
     cursor.execute("""
         SELECT MAX(date) FROM appointments
     """)
@@ -1398,7 +1392,7 @@ def update_time_slots():
                         INSERT INTO appointments (date, time_slot, gp_email, patient_email, appointment_status)
                         VALUES (?, ?, ?, NULL, "Available")
                     """, (str(day), slot, gp_email))
-        print(f"Added {days_to_add.days} new days of slots up to {today + timedelta(days=90)}.")
+        #print(f"Added {days_to_add.days} new days of slots up to {today + timedelta(days=90)}.")
 
     # Commit changes and close the connection
     connection.commit()
@@ -2497,16 +2491,14 @@ def main_menu():
 
 #====================Call function========================
 def call_function():
-    try:
-        ensure_pip_installed()
-        install_modules()
-        initialize_database()
-        initialize_and_populate_new_gp_slots()
-        update_time_slots()
-        header()
-        main_menu()
-    except Exception as e:
-        print(f"Excpetion is : {e}")
+	ensure_pip_installed()
+	install_modules()
+	initialize_database()
+	initialize_and_populate_new_gp_slots()
+	update_time_slots()
+	header()
+	main_menu()
+
 call_function()
 #=========================================================
 
