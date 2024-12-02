@@ -369,8 +369,450 @@ def delete_accounts():
                 print("Account deletion cancelled.")
             else:
                 print("Invalid input. Please confirm with 'Y' or 'N'")
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            return load(file)
+    except FileNotFoundError:
+        return {"patient": {}, "gp": {}, "admin": {}}
+def save_data(data):
+    with open(DATA_FILE, "w") as file:
+        dump(data, file, indent=4)
+def manage_gp_details():
+    from time import sleep
+    # New JSon file, but it only contains new data, have to import all the other GPs from the other accounts.json file
+    data_file = "gp_data.json"
+    if os.path.exists(data_file):
+        with open(data_file, "r") as file:
+            gp_data = load(file)
+    else:
+        gp_data = {
+            "gp1@gmail.com": {
+                "email": "gp1@gmail.com",
+                "password": "password1",
+                "name": "Unknown",
+                "surname": "Unknown",
+                "date_of_birth": "Unknown",
+                "gender": "Unknown",
+                "NHS_blood_donor": "Unknown",
+                "NHS_organ_donor": "Unknown",
+                "Address_Line_1": "Unknown",
+                "Address_Line_2": "Unknown",
+                "conditions": [],
+                "clinical_notes": "None",
+                "journals": []
+            }
+        }
 
-#other functions...
+    def save_data2():
+        with open(data_file, "w") as file:
+            dump(gp_data, file, indent=4)
+    def display_all_gps():
+        if not gp_data:
+            print("No GPs found.")
+            return {}
+        print("List of GPs:\n")
+        for index, (email, details) in enumerate(gp_data.items(), start=1):
+            print(f"[{index}] Name: {details['name']} {details['surname']}, Email: {email}")
+        return {i + 1: (email, details) for i, (email, details) in enumerate(gp_data.items())}
+    # Function to update GP details
+    def update_gp_details(email_to_edit):
+        gp_details = gp_data[email_to_edit]
+        # Display the current GP details before editing
+        print("\nCurrent GP Details:")
+        print(f"[1] Email: {gp_details['email']}")
+        print(f"[2] Password: {gp_details['password']}")
+        print(f"[3] Name: {gp_details['name']}")
+        print(f"[4] Surname: {gp_details['surname']}")
+        print(f"[5] Date of Birth: {gp_details['date_of_birth']}")
+        print(f"[6] Gender: {gp_details['gender']}")
+        print(f"[7] NHS Blood Donor: {gp_details['NHS_blood_donor']}")
+        print(f"[8] NHS Organ Donor: {gp_details['NHS_organ_donor']}")
+        print(f"[9] Address Line 1: {gp_details['Address_Line_1']}")
+        print(f"[10] Address Line 2: {gp_details['Address_Line_2']}")
+        print("\nWhich detail would you like to edit?")
+        choice9 = input("Enter your choice: ").strip().upper()
+        if choice9 == "H":
+            print("Returning to the homepage...\n")
+            return
+        if choice9.isdigit() and 0 < int(choice) <= 10:
+            selected_field = list(gp_details.keys())[int(choice) - 1]
+            new_value = input(
+                f"Enter new {selected_field.replace('_', ' ')} (current: {gp_details[selected_field]}): ").strip()
+            if new_value != gp_details[selected_field]:
+                while True:
+                    confirm = input("Confirm change? (Y/N): ").strip().lower()
+                    if confirm == "y":
+                        gp_details[selected_field] = new_value
+                        save_data2()  # Save the updated data to the file
+                        print(f"{selected_field.replace('_', ' ').title()} updated successfully!")
+                        break
+                    elif confirm == "n":
+                        print(f"Change to {selected_field.replace('_', ' ')} discarded.")
+                        break
+                    else:
+                        print("Please input Y or N.")
+        else:
+            print("Invalid option. Returning to the homepage...\n")
+            return
+        print("\nUpdated GP Details:")
+        for key, value in gp_details.items():
+            print(f"{key.replace('_', ' ').title()}: {value}")
+        save_data2()  # Save the updated data to the file
+        print("\nChanges saved successfully!")
+    # Function to display options and allow selection of a GP to edit
+    while True:
+        print("\n[1] Display and Edit GP Details")
+        print("[X] Return to Admin Homepage")
+        option = input("Enter your choice: ").strip().upper()
+        if option == "1":
+            account_mapping = display_all_gps()
+            if account_mapping:
+                try:
+                    choice = int(input("Enter the number of the GP to edit: ").strip())
+                    email_to_edit = account_mapping[choice][0]
+                    update_gp_details(email_to_edit)
+                except (ValueError, KeyError):
+                    print("Invalid option. Please try again.")
+        elif option.upper() == "X":
+            print("Returning to the Admin Homepage...\n")
+            break
+        else:
+            print("Invalid option. Please try again.")
+    # Redirect to Admin Homepage
+    admins_page()
+def manage_gp_system():
+    # Register a new GP
+    def register_gp():
+        """Function to register a new General Practitioner (GP)."""
+        print("\nRegister a new GP:")
+        email = input("Email: ").strip()
+        password = input("Password: ").strip()
+        name = input("First Name: ").strip()
+        surname = input("Surname: ").strip()
+        date_of_birth = input("Date of Birth (DD/MM/YYYY): ").strip()
+        gender = input("Gender: ").strip()
+        NHS_blood_donor = input("NHS Blood Donor (Yes/No): ").strip()
+        NHS_organ_donor = input("NHS Organ Donor (Yes/No): ").strip()
+        address_line_1 = input("Address Line 1: ").strip()
+        address_line_2 = input("Address Line 2: ").strip()
+        data = load_data()
+        if email in data["gp"]:
+            print(f"\nError: GP with email {email} already exists.")
+            return
+        # Create a new GP entry
+        data["gp"][email] = {
+            "email": email,
+            "password": password,
+            "name": name,
+            "surname": surname,
+            "date_of_birth": date_of_birth,
+            "gender": gender,
+            "NHS_blood_donor": NHS_blood_donor,
+            "NHS_organ_donor": NHS_organ_donor,
+            "Address_Line_1": address_line_1,
+            "Address_Line_2": address_line_2,
+            "conditions": [],
+            "clinical_notes": "None",
+            "journals": []
+        }
+        save_data(data)
+        print(f"\n{name} {surname} has been successfully registered as a GP.")
+    # Display all GPs
+    def display_gps():
+        """Display all registered GPs."""
+        data = load_data()
+        gps = data.get("gp", {})
+        if not gps:
+            print("\nNo GPs registered yet.")
+            return
+        print("\nRegistered GPs:")
+        for i, (email, details) in enumerate(gps.items(), start=1):
+            print(f"{i}. {details['name']} {details['surname']} ({email})")
+    # Main program loop
+    while True:
+        print("\n[1] Register a new GP")
+        print("[2] View all GPs")
+        print("[X] Return To Admin Homepage")
+        choice = input("Enter your choice: ").strip()
+        if choice == '1':
+            register_gp()
+        elif choice == '2':
+            display_gps()
+        elif choice.upper() == 'X':
+            admins_page()  # Calls the admin homepage when 'X' is pressed
+        else:
+            print("Invalid choice. Please try again.")
+def manage_accounts():
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as file:
+            accounts_data = load(file)
+    else:
+        accounts_data = {
+            "patient": {
+                "mnedjadi2003@gmail.com": {
+                    "email": "mnedjadi2003@gmail.com",
+                    "password": "Yamina20",
+                    "name": "mohamed",
+                    "surname": "nedjadi",
+                    "date_of_birth": "05/11/2003",
+                    "gender": "Male",
+                    "NHS_blood_donor": "IS Blood donor",
+                    "NHS_organ_donor": "IS Organ donor",
+                    "Address_Line_1": "401 Jutsum",
+                    "Address_Line_2": "London",
+                    "journals": [
+                        {
+                            "date": "2024-11-24 15:47:03",
+                            "entry": "cwdhcfwefhciwehfwef\nwefuiweifherwighfer\newfuiwehfopwehfwe["
+                        }
+                    ],
+                    "conditions": [],
+                    "clinical_notes": "None"
+                },
+                "tangid.mhm03@outlook.com": {
+                    "email": "tangid.mhm03@outlook.com",
+                    "password": "Excalibur5",
+                    "name": "Tangid",
+                    "surname": "Mohammad",
+                    "date_of_birth": "16/09/2003",
+                    "gender": "Male",
+                    "NHS_blood_donor": "IS Blood donor",
+                    "NHS_organ_donor": "NOT Organ donor",
+                    "Address_Line_1": "86 Victoria Road",
+                    "Address_Line_2": "London",
+                    "journals": [
+                        {
+                            "date": "2024-11-24 16:49:05",
+                            "entry": "Hello, my name is Tangid\nI want to go home\n\n\nBye"
+                        }
+                    ],
+                    "conditions": [],
+                    "clinical_notes": "None"
+                }
+            },
+            "gp": {},
+            "admin": {}
+        }
+    def update_account_page(email_address):
+        patient_data = accounts_data.get("patient", {})
+        account_details = patient_data.get(email_address)
+
+        if not account_details:
+            print("No patient found with the provided email address.")
+            return
+
+        while True:
+            print("=" * 80)
+            print("Account Details:\n".center(80))
+            counter = 1
+            keys = list(account_details.keys())
+            for key, value in account_details.items():
+                print(f"[{counter}] {key[0].upper() + key[1:].replace('_', ' ')}: {value}")
+                counter += 1
+            print("\n[ H ]  Return to Patient Selection\n")
+
+            update_option = input("Please select an option to edit: ").strip()
+
+            if update_option.upper() == "H":
+                print("Returning to patient selection...\n")
+                sleep(1)
+                break
+
+            if update_option.isdigit() and 0 < int(update_option) <= counter:
+                selected_key = keys[int(update_option) - 1]
+                new_value = input(f"Enter new value for {selected_key}: ").strip()
+                if new_value != account_details[selected_key]:
+                    while True:
+                        confirm = input("Confirm change? (Y/N): ").strip().lower()
+                        if confirm == "y":
+                            account_details[selected_key] = new_value
+                            accounts_data["patient"][email_address] = account_details
+                            save_data(accounts_data)  # Save changes after every update
+                            print("Changes saved successfully!")
+                            break
+                        elif confirm == "n":
+                            print("Change discarded.")
+                            break
+                        else:
+                            print("Please input Y or N.")
+            else:
+                print("\nInvalid input. Please choose a valid option.")
+
+
+
+    while True:
+        print("\nOptions Menu:")
+        print("[1] Display and Edit Patients")
+        print("[X] Exit")
+
+        choice = input("Enter your choice: ").strip()
+
+        if choice == "1":
+            patient_data = accounts_data.get("patient", {})
+
+            if not patient_data:
+                print("No patients found.")
+                continue
+
+            print("List of Patients:\n")
+            for index, (email, details) in enumerate(patient_data.items(), start=1):
+                print(f"[{index}] Name: {details['name']} {details['surname']}, Email: {email}")
+
+            while True:
+                try:
+                    selection = input(
+                        "\nEnter the number of the patient to edit (or 'H' to return to main menu): ").strip()
+                    if selection.upper() == "H":
+                        print("Returning to main menu...\n")
+                        break
+                    patient_index = int(selection)
+                    if 1 <= patient_index <= len(patient_data):
+                        selected_email = list(patient_data.keys())[patient_index - 1]
+                        update_account_page(selected_email)
+                        break
+                    else:
+                        print("Invalid selection. Please choose a valid number.")
+                except ValueError:
+                    print("Invalid input. Please enter a number or 'H'.")
+        elif choice.upper() == "X":
+            print("Exiting the programme")
+            break
+        else:
+            print("Invalid choice. Please try again.")
+def display_summary_info_system():
+
+    if os.path.exists(DATA_FILE):
+        with open(DATA_FILE, "r") as file:
+            json_data = json.load(file)
+    else:
+        json_data = {
+        "patient": {
+            "mnedjadi2003@gmail.com": {
+                "email": "mnedjadi2003@gmail.com",
+                "password": "Yamina20",
+                "name": "mohamed",
+                "surname": "nedjadi",
+                "date_of_birth": "05/11/2003",
+                "gender": "Male",
+                "NHS_blood_donor": "IS Blood donor",
+                "NHS_organ_donor": "IS Organ donor",
+                "Address_Line_1": "401 Jutsum",
+                "Address_Line_2": "London",
+                "journals": [
+                    {
+                        "date": "2024-11-24 15:47:03",
+                        "entry": "cwdhcfwefhciwehfwef\nwefuiweifherwighfer\newfuiwehfopwehfwe["
+                    }
+                ],
+                "conditions": [],
+                "clinical_notes": "None"
+            },
+            "tangid.mhm03@outlook.com": {
+                "email": "tangid.mhm03@outlook.com",
+                "password": "Excalibur5",
+                "name": "Tangid",
+                "surname": "Mohammad",
+                "date_of_birth": "16/09/2003",
+                "gender": "Male",
+                "NHS_blood_donor": "IS Blood donor",
+                "NHS_organ_donor": "NOT Organ donor",
+                "Address_Line_1": "86 Victoria Road",
+                "Address_Line_2": "London",
+                "journals": [
+                    {
+                        "date": "2024-11-24 16:49:05",
+                        "entry": "Hello, my name is Tangid\nI want to go home\n\n\nBye"
+                    }
+                ],
+                "conditions": [],
+                "clinical_notes": "None"
+            }
+        },
+        "gp": {
+            "gp1@gmail.com": {
+                "email": "gp1@gmail.com",
+                "password": "password1",
+                "name": "Unknown",
+                "surname": "Unknown",
+                "date_of_birth": "Unknown",
+                "gender": "Unknown",
+                "NHS_blood_donor": "Unknown",
+                "NHS_organ_donor": "Unknown",
+                "Address_Line_1": "Unknown",
+                "Address_Line_2": "Unknown",
+                "conditions": [],
+                "clinical_notes": "None",
+                "journals": []
+            }
+        }
+    }
+
+    # Sample bookings
+    bookings = [
+        {"patient": "mohamed nedjadi", "mhwp": "Unknown Unknown", "date": "2024-11-25"},
+        {"patient": "Tangid Mohammad", "mhwp": "Unknown Unknown", "date": "2024-11-26"},
+        {"patient": "mohamed nedjadi", "mhwp": "Unknown Unknown", "date": "2024-11-27"},
+    ]
+
+    # Combine patients and MHWPs into a single dictionary
+    users = {
+        **json_data["patient"],
+        **json_data["gp"],
+    }
+
+    def list_users():
+        """Display all users and allow the user to select one to view details."""
+        while True:
+            print("\nList of Users:")
+            user_list = list(users.items())
+            for idx, (email, data) in enumerate(user_list, 1):
+                user_type = "Patient" if email in json_data["patient"] else "MHWP"
+                full_name = f"{data['name']} {data['surname']}"
+                print(f"[{idx}] {full_name} ({user_type})")
+
+            # Select a user
+            while True:
+                choice = input("\nSelect a user to view details (or X to return to Admin Homepage): ")
+                if choice.upper() == 'X':
+                    print("Returning to Admin Homepage...")
+                    admins_page()
+                elif 1 <= choice <= len(user_list):
+                    email, data = user_list[choice - 1]
+                    view_user_details(email, data)
+                    break
+                else:
+                    print("Invalid choice. Please choose a valid option '1' or 'X'.")
+
+    def view_user_details(email, data):
+        """View detailed information about the selected user."""
+        full_name = f"{data['name']} {data['surname']}"
+        user_type = "Patient" if email in json_data["patient"] else "MHWP"
+        print(f"\nDetails for {full_name}:")
+        print(f"Email: {email}")
+        print(f"Date of Birth: {data['date_of_birth']}")
+        print(f"Gender: {data['gender']}")
+        print(f"NHS Blood Donor: {data['NHS_blood_donor']}")
+        print(f"NHS Organ Donor: {data['NHS_organ_donor']}")
+        print(f"Address: {data['Address_Line_1']}, {data['Address_Line_2']}")
+        print(f"User Type: {user_type}")
+
+        if user_type == "Patient":
+            # List appointments for the patient
+            patient_bookings = [b for b in bookings if b["patient"].lower() == full_name.lower()]
+            print(f"\nNumber of Appointments: {len(patient_bookings)}")
+            for booking in patient_bookings:
+                print(f"- Date: {booking['date']}, MHWP: {booking['mhwp']}")
+        elif user_type == "MHWP":
+            # List bookings for the MHWP
+            mhwp_bookings = [b for b in bookings if b["mhwp"].lower() == full_name.lower()]
+            print(f"\nNumber of Upcoming Bookings This Week: {len(mhwp_bookings)}")
+            for booking in mhwp_bookings:
+                print(f"- Date: {booking['date']}, Patient: {booking['patient']}")
+
+        print("\nPress Enter to return to 'List of Users'.")
+        input()
+        list_users()
 #==========================================================
 
 
@@ -2040,31 +2482,33 @@ def admins_page():
     print("ADMIN HOMEPAGE".center(80))
     print(termcolor.colored("Welcome, Admin. Managing the platform for better mental health!".center(80), "green"))
     print("-" * 80)
-    print("[ 1 ] Add new doctor")
+    print("[ 1 ] Add New MHWP")
     print("[ 2 ] Activate/Deactivate or Delete accounts ")
-    print("[ 3 ] Confirm/Un-confirm patient registration ")
-    print("[ 4 ] Check in/out patients ")
-    print("[ 5 ] Change patient/gp details ")
+    print("[ 3 ] Change GP Details ")
+    print("[ 4 ] Change Patient Details ")
+    print("[ 5 ] Display User Details")
     print("[ X ] Logout")
 
     while True:
         choice = input("\nPlease select and option: ").strip()
         if choice.upper() == "X":
             login_menu()
+
         elif choice == "1":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            manage_gp_system()
+
         elif choice == "2":
             delete_accounts()
+
         elif choice == "3":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            manage_gp_details()
+
         elif choice == "4":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            manage_accounts()
+
         elif choice == "5":
-            print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
-            main_menu()
+            display_summary_info_system()
+
         else:
             print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
 #==========================================================
@@ -2546,21 +2990,13 @@ def main_menu():
 
 #====================Call function========================
 def call_function():
-	ensure_pip_installed()
-	install_modules()
-	initialize_database()
-	initialize_and_populate_new_gp_slots()
-	update_time_slots()
-	header()
-	main_menu()
+    ensure_pip_installed()
+    install_modules()
+    initialize_database()
+    initialize_and_populate_new_gp_slots()
+    update_time_slots()
+    header()
+    main_menu()
 
 call_function()
 #=========================================================
-
-
-
-
-
-
-
-
