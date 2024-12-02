@@ -377,6 +377,23 @@ def delete_accounts():
 #====================Patient Homepage======================
 
 #[ 1 ] Book and manage appointments
+def book_and_manage_appointments(email_address):
+    print("[ 1 ] View upcoming appointments")
+    print("[ 2 ] Book an appointment")
+    print("[ 3 ] Cancel appointment")
+    print("[ M ] Return to Main menu")
+    while True:
+        choice1 = input("\nPlease select an option: ").strip()
+        if choice1.upper() == "M":
+            patients_page(email_address=email_address)
+        elif choice1 == "1":
+            view_patient_schedule(email_address)
+        elif choice1 == "2":
+            book_appointment(email_address, "gp1@gmail.com")  # Need to wait for GP-Patient pairings
+        elif choice1 == "3":
+            cancel_patient_appointment(email_address)
+        else:
+            print("Please choose a valid option '1' , '2' , '3' or 'M'")
 def view_patient_schedule(patient_email):
     conn = sqlite3.connect('appointments.db')
     cursor = conn.cursor()
@@ -1185,6 +1202,60 @@ def update_account_page(email_address):
             break
         elif edit_again!= "y":
             print("Returning to the edit menu")
+
+# [ 6 ] Helplines
+def helplines(email_address):
+    print("=" * 80)
+    print("HELPLINES".center(80))
+    print("""\n\033[1mIf it's an emergency or you need urgent help:\033[0m\n""")
+    print("""- If you or someone else is in danger, call \033[1m\033[4m999\033[0m\033[0m or go to A&E now""")
+    print("""- If you need urgent help for your mental health, get help call \033[1m\033[4m111\033[0m\033[0m
+      www.nhs.uk""")
+    print("-" * 80)
+    print("""Experiencing a mental health problem or supporting someone else - www.sane.org.uk
+    Call: \033[1;4m0300 304 7000\033[0m (4.30pm–10pm every day)""")
+    print("-" * 80)
+    print("""Suicide Prevention Helpline UK - www.spuk.org.uk
+    Call: \033[1;4m0800 689 5652\033[0m (6pm to midnight every day)""")
+    print("-" * 80)
+    print("""Samaritans (distressed, despaired or having suicidal thought) - www.samaritans.org
+    Call: \033[1;4m0808 164 0123\033[0m (7pm–11pm every day) or \033[1;4m116 123\033[0m (24 hours a day)""")
+    print("-" * 80)
+    print("""Parents helpline - www.youngminds.org.uk
+    Call: \033[1;4m0808 802 5544\033[0m (Mon-Fri from 9.30am to 4pm)""")
+    print("-" * 80)
+    print("""Severe mental illness (schizophrenia, bipolar disorder) - www.rethink.org
+    Call: \033[1;4m0300 5000 927\033[0m (9:30am to 4pm, Monday to Friday)""")
+    print("-" * 80)
+    print("""General mental health support - www.mind.org.uk
+    Call: \033[1;4m0300 123 3393\033[0m (9am to 6pm, Monday to Friday), or text \033[1;4m86463\033[0m""")
+    print("-" * 80)
+    sleep(2)
+    print("\nIf you can't talk on the phone:")
+    print("""
+\033[1mList of mental health helplines\033[0m from the Helplines Partnership
+(https://www.helplines.org/helplines/?fwp_topics=mental-health)
+
+\033[1mMental Health Foundation\033[0m provides useful information on a range of mental health difficulties, as well as resources to support your wellbeing 
+(https://www.mentalhealth.org.uk/explore-mental-health/publications)
+
+\033[1mMentally Healthy\033[0m Schools has a wide range of information for schools and teachers to support young people’s mental health 
+(https://www.mentallyhealthyschools.org.uk/)
+
+\033[1mMental Health and Money Advice\033[0m provides practical advice and support for people experiencing issues with mental health and money 
+(https://www.mentalhealthandmoneyadvice.org/)
+
+\033[1mMe and My Mind\033[0m has some useful information for young people who may be having unusual experiences, such as paranoia or hearing voices 
+(https://www.meandmymind.nhs.uk/)
+    """)
+    print("\nEnter 'M' to return to main menu ")
+    while True:
+        pick = input("").strip()
+        if pick.upper() == "M":
+            print("Returing to main menu..\n")
+            patients_page(email_address)
+        else:
+            continue
 #==========================================================
 
 
@@ -1311,6 +1382,24 @@ def view_gp_schedule_by_week(gp_email):
             print("Please choose a valid option '1' or 'M'")
 
 # [ 2 ] Manage appointments
+def manage_appointments(gp_email):
+    print("\n")
+    print("[ 1 ] View upcoming appointments")
+    print("[ 2 ] Confirm appointments")
+    print("[ 3 ] Cancel appointments")
+    print("[ M ] Return to Main menu")
+    while True:
+        c6 = input("Please select an option: ").strip()
+        if c6.upper() == "M":
+            gp_page(gp_email)
+        elif c6 == "1":
+            view_upcoming_appointments(gp_email)
+        elif c6 == "2":
+            confirm_appointments(gp_email)
+        elif c6 == "3":
+            cancel_gp_appointment(gp_email)
+        else:
+            print("Please choose a valid option '1' , '2' , '3' or 'M'")
 def setup_database():
     """
     Sets up the database with the appointments table.
@@ -1887,9 +1976,6 @@ def manage_patient_information(gp_email):
             print("Invalid choice. Please select '1', '2', '3', or 'M'.")
 
 # [ 4 ] Check in/out patients
-
-
-
 #==========================================================
 
 
@@ -1904,6 +1990,7 @@ def patients_page(email_address):
     print("[ 3 ] Access meditation help & tips and more")
     print("[ 4 ] Access journal entries")
     print("[ 5 ] Change account details")
+    print("[ 6 ] Helplines")
     print("[ X ] Logout")
 
     while True:
@@ -1911,34 +1998,20 @@ def patients_page(email_address):
         if choice.upper() == "X":
             login_menu()
         elif choice == "1":
-            print("[ 1 ] View upcoming appointments")
-            print("[ 2 ] Book an appointment")
-            print("[ 3 ] Cancel appointment")
-            print("[ M ] Return to Main menu")
-            while True:
-                choice1 = input("\nPlease select an option: ")
-                if choice1.upper() == "M":
-                    patients_page(email_address=email_address)
-                elif choice1 == "1":
-                    view_patient_schedule(email_address)
-                elif choice1 == "2":
-                    book_appointment(email_address, "gp1@gmail.com") # Need to wait for GP-Patient pairings
-                elif choice1 == "3":
-                    cancel_patient_appointment(email_address)
-                else:
-                    print("Please choose a valid option '1' , '2' , '3' or 'M'")
-
+            book_and_manage_appointments(email_address)
         elif choice == "2":
             print("FUNCTION NOT ADDED. WORK IN PROGRESS")   #<---------------------------Put function here.
             main_menu()
         elif choice == "3":
-            mhresources(email_address=email_address)
+            mhresources(email_address)
         elif choice == "4":
-            journal_page(email_address=email_address)
+            journal_page(email_address)
         elif choice == "5":
-            update_account_page(email_address=email_address)
+            update_account_page(email_address)
+        elif choice == "6":
+            helplines(email_address)
         else:
-            print("Please choose a valid option '1' , '2', '3', '4', '5' or 'X'")
+            print("Please choose a valid option '1' , '2', '3', '4', '5', '6' or 'X'")
 def gp_page(gp_email):
     print("=" * 80)
     print("GP HOMEPAGE".center(80))
@@ -1957,24 +2030,7 @@ def gp_page(gp_email):
         elif choice1 == "1":
             view_gp_schedule(gp_email)
         elif choice1 == "2":
-            print("\n")
-            print("[ 1 ] View upcoming appointments")
-            print("[ 2 ] Confirm appointments")
-            print("[ 3 ] Cancel appointments")
-            print("[ M ] Return to Main menu")
-            while True:
-                c6 = input("Please select an option: ")
-                if c6.upper() == "M":
-                    gp_page(gp_email)
-                elif c6 == "1":
-                    view_upcoming_appointments(gp_email)
-                elif c6 == "2":
-                    confirm_appointments(gp_email)
-                elif c6 == "3":
-                    cancel_gp_appointment(gp_email)
-                else:
-                    print("Please choose a valid option '1' , '2' , '3' or 'M'")
-
+            manage_appointments(gp_email)
         elif choice1 == "3":
             manage_patient_information(gp_email)
         elif choice1 == "4":
@@ -2491,7 +2547,6 @@ def main_menu():
             exit()
         else:
             print("Invalid choice! Please enter 1, 2, or E.")
-
 #=========================================================
 
 
