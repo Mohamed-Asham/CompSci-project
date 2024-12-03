@@ -305,6 +305,497 @@ registered_users = load_accounts()
 
 
 #======================Admin Homepage======================
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            return load(file)
+    except FileNotFoundError:
+        return {"patient": {}, "gp": {}, "admin": {}}
+def save_data(data):
+    with open(DATA_FILE, "w") as file:
+        dump(data, file, indent=4)
+
+# [ 1 ] GP Management System
+def manage_gp_system():
+    while True:
+        print("=" * 80)
+        print("GP MANAGEMENT SYSTEM".center(80))
+        print("[ 1 ] Register a new GP")
+        print("[ 2 ] View all GPs")
+        print("[ 3 ] Change GP Details")
+        print("[ H ] Admin homepage")
+        choice = input("Enter your choice: ").strip()
+        if choice == "1":
+            register_gp()
+        elif choice == "2":
+            display_gps()
+        elif choice == "3":
+            change_gp_details()
+        elif choice.upper() == "H":
+            admins_page()
+        else:
+            print("Please choose a valid option '1' , '2', '3'  or 'H'")
+def register_gp():
+    print("-" * 80)
+    print("REGISTERING GP".center(80))
+    print("Please enter GP details \n\nEnter 'H' to return to homepage\n")
+    while True:
+        first_name = input("First name: ").strip()
+        if first_name.upper() == "H":
+            admins_page()
+        elif first_name.replace(" ", "").isalpha():
+            break
+        else:
+            print("Invalid name. Name must all be alphabets")
+    while True:
+        sur_name = input("Last name: ").strip()
+        if sur_name.upper() == "H":
+            admins_page()
+        elif sur_name.replace(" ", "").isalpha():
+            break
+        else:
+            print("Invalid surname. Name must all be alphabets")
+
+    while True:
+        date_input = input("Birth date (DD/MM/YYYY): ").strip()  # Pad single digit day with zero if necessary
+        if date_input.upper() == "H":
+            admins_page()
+        else:
+            try:
+                date_input.zfill(2)
+                day, month, year = date_input.split("/")
+                day = int(day)
+                month = int(month)
+                year = int(year)
+            except Exception:
+                print(f"Invalid birth date, try again.")
+                continue
+
+            try:
+                if not (1 <= day <= 31):
+                    print("Invalid day. Please enter a day between 01 and 31.")
+                elif not (1 <= month <= 12):
+                    print("Invalid month. Please enter a month between 01 and 12.")
+                elif not (1900 <= year <= datetime.now().year):
+                    print(f"Invalid year. Please enter a year between 1900 and {datetime.now().year}.")
+                else:
+                    datetime.strptime(date_input, "%d/%m/%Y")
+                    break
+            except Exception:
+                print(f"Invalid birth date, try again.")
+
+    while True:
+        email_address = input("Email address: ").strip()
+        email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
+        if email_address.upper() == "H":
+            admins_page()
+        email_check = checking_email(email_address)
+
+        if email_check == "Email already registered":
+            print("This email is already registered. Please use a different email.")
+        else:
+            if match(email_pattern, email_address):
+                break
+            elif not match(email_pattern, email_address):
+                print("Invalid email format. Please enter a valid email.")
+            else:
+                print("Invalid email format. Please enter a valid email.")
+                print("Press 'M' to return to main menu")
+
+    while True:
+        input_password = input("Password [8 characters min, 1 uppercase letter min, and 1 number min]: ").strip()
+        if input_password.upper() == "H":
+            admins_page()
+
+        has_upper = False
+        has_digit = False
+        password_pattern = r'^(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$'
+
+        for char in input_password:
+            if char.isupper():
+                has_upper = True
+            if char.isdigit():
+                has_digit = True
+            if has_upper and has_digit:
+                break
+
+        if not has_upper:
+            print("The password is missing an uppercase letter.")
+        elif not has_digit:
+            print("The password is missing a number.")
+        elif len(input_password) < 8:
+            print("Password length is less than 8 characters.")
+        elif not match(password_pattern, input_password):
+            print("Password is weak, try a stronger password")
+        else:
+            confirm_password = input("Confirm password: ")
+            if confirm_password != input_password:
+                print("Passwords do not match, please enter password again")
+            else:
+                break
+
+    while True:
+        print("Genders:")
+        print("[ 1 ] Male")
+        print("[ 2 ] Female")
+
+        try:
+            user_gender = input("Please choose an option: ").strip()
+            if user_gender.upper() == "H":
+                admins_page()
+
+            if user_gender == "1":
+                user_gender = "Male"
+                break
+            elif user_gender == "2":
+                user_gender = "Female"
+                break
+            else:
+                print("Please choose a valid option '1' or '2' ")
+        except Exception:
+            print("Invalid option")
+
+    while True:
+        try:
+            ad1 = input("Address Line 1 (House number, street name): ")
+            if ad1.upper() == "H":
+                admins_page()
+            address_line_1_pattern = r"^\d+\s+[\w\s\-']+(\s+(Apt|Suite|St|Rd|Lane|Blvd|Ave|Dr|Court|Pl|Road|Street|Way|Close))?(\s*\d*[A-Za-z]?)?$"
+
+            if match(address_line_1_pattern, ad1):
+                break
+            else:
+                print("Address Line 1 is not valid.")
+        except Exception:
+            print("Invalid address, try again")
+
+    while True:
+        try:
+            ad2 = input("Address Line 2 (Postcode, zipcode, or country): ")
+            if ad2.upper() == "H":
+                admins_page()
+            address_line_2_pattern = r'^[A-Za-z0-9\s,]+$'
+
+            if match(address_line_2_pattern, ad2):
+                break
+            else:
+                print("Address Line 1 is not valid.")
+        except Exception:
+            print("Invalid address, try again")
+
+    user = Accounts(email_address, input_password, first_name, sur_name,
+                    date_input, user_gender, job_role = "gp", address_line_1= ad1, address_line_2= ad2)
+
+    print("GP account has been made.")
+    print("Current account is being registered to system...")
+    sleep(2)
+def display_gps():
+    print("-" * 80)
+    print("All registered GPs".center(80))
+
+    print("\nEnter 'H' to return to homepage\n")
+
+    gp_accounts = registered_users["gp"]
+    if not gp_accounts:
+        print("No accounts available.")
+        return
+
+    account_mapping = {}
+    counter = 1
+
+    if gp_accounts:
+        for email, details in gp_accounts.items():
+            print(f"[ {counter} ] Name: {details['name']}, "
+                  f"Surname: {details['surname']}, Email: {email}, ")
+            # account_mapping[counter] = (role, email)  # Map the number to role and email
+            counter += 1
+    else:
+        print("No accounts")
+
+    while True:
+        something = input("").strip()
+        if something.upper() == "H":
+            # print(f"\n{"=" * 80}")
+            manage_gp_system()
+            return
+def change_gp_details():
+    print("-" * 80)
+    print("All registered GPs".center(80))
+
+    print("\nEnter 'H' to return to homepage\n")
+
+    gp_accounts = registered_users["gp"]
+    if not gp_accounts:
+        print("No accounts available.")
+        return
+
+    account_mapping = {}
+    counter = 1
+
+    if gp_accounts:
+        for email, details in gp_accounts.items():
+            print(f"[ {counter} ] Name: {details['name']}, "
+                  f"Surname: {details['surname']}, Email: {email}, ")
+            account_mapping[counter] = email  # Map the number to role and email
+            counter += 1
+    else:
+        print("No accounts")
+
+    while True:
+        email_choice = input("\nEnter the number of the account to change details: ").strip()
+        if email_choice.upper() == "H":
+            admins_page()
+            return
+
+        account_numbers = int(email_choice)
+
+        if account_numbers not in account_mapping:
+            print(f"Invalid numbers found: {account_numbers}")
+            continue
+        else:
+            email_to_view = account_mapping[account_numbers]
+            break
+
+    email_address = email_to_view
+    account_details = registered_users["gp"][email_to_view]
+    updates_made = False
+
+    while True:
+        print("="*80)
+        print("Account Details:\n".center(80))
+        counter = 1
+        for key, value in account_details.items():
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
+                print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
+                counter += 1
+        print("\n[ H ]  Go to Homepage")
+
+        update_option = input("\nPlease select an option to edit: ").strip()
+
+        if update_option.upper() == "H":
+            print("Returning to your homepage\n")
+            admins_page()
+            break
+
+        if update_option.isdigit() and 0 <= int(update_option) <= 9:
+            update_option = int(update_option)
+        else:
+            print("\n")
+            print("Invalid input. Please choose a valid option")
+            continue
+
+
+        if update_option == 1:
+            while True:
+                new_email = input("Please enter your new email address: ").strip()
+                email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
+
+                if new_email.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+
+                if new_email == email_address:
+                    print("This is already your current email. ")
+                    break
+
+                if new_email in registered_users["gp"] and new_email != email_address:
+                    print("This is already your current email. No changes made. ")
+                    break
+
+
+                elif match(email_pattern,new_email):
+
+                    reset_code = str(randint(100000, 999999))
+                    print(f"To verify the new email address, a verification code will be sent to the email. Simulated reset code {new_email}: {reset_code}")
+
+                    for attempt in range(4):
+                        user_code = input("Enter the reset code sent to your email: ")
+                        if user_code == reset_code:
+                            break
+                        else:
+                            print("Incorrect code. Please try again")
+                            if attempt == 3:
+                                print("Too many incorrect attempts. No change has been made to your account. Returning to your homepage...\n")
+                                sleep(2)
+                                admins_page()
+                                return
+
+                    account_details["email"] = new_email
+                    del registered_users["gp"][email_address]
+                    registered_users["gp"][new_email] = account_details
+                    email_address= new_email
+                    updates_made=True
+                    break
+                else:
+                    print("Invalid email format. Please enter a valid email.")
+
+        elif update_option == 2:
+            new_first_name = input("Please enter your new first name: ").strip()
+            if new_first_name != account_details["name"]:
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["name"] = new_first_name
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+
+            else:
+                print("This is already your current first name.")
+
+
+
+        elif update_option == 3:
+            new_surname = input("Please enter your new surname: ").strip()
+            if new_surname != account_details["surname"]:
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["surname"] = new_surname
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+
+                    else:
+                        print("Please input a valid option, either Y or N ")
+
+            else:
+                print("This is already your current surname")
+
+
+        elif update_option == 4:
+            while True:
+                new_birthday = input("Birth date (DD/MM/YYYY): ").strip()
+
+                if new_birthday.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+
+                if new_birthday != account_details["date_of_birth"]:
+                    try:
+                        day, month, year = map(int, new_birthday.split("/"))
+                        datetime(year,month,day)
+                        account_details["date_of_birth"] = new_birthday
+                        updates_made= True
+                        break
+                    except ValueError:
+                        print("Invalid birth date. Please enter in the format DD/MM/YYYY.")
+                else:
+                    print("This is already your current date of birth.")
+                    break
+
+
+        elif update_option == 5:
+            while True:
+                print("Genders:")
+                print("[ 1 ] Male")
+                print("[ 2 ] Female")
+
+                new_gender_option = input("Please choose an option: ").strip()
+                if new_gender_option == "1":
+                    new_gender = "Male"
+                elif new_gender_option == "2":
+                    new_gender = "Female"
+                elif new_gender_option.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+                else:
+                    print("Please choose a valid option '1' or '2' ")
+
+                if new_gender != account_details["gender"]:
+                    account_details["gender"] = new_gender
+                    updates_made= True
+                    break
+                else:
+                    print("Please choose a valid option '1' or '2' ")
+                    break
+
+        elif update_option == 8:
+
+            ad1_new = input("Please enter a new Address Line 1: ")
+            if ad1_new != account_details["Address_Line_1"]:
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_1"] = ad1_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+
+            else:
+                print("This is already your current Address Line 2.")
+
+
+        elif update_option == 9:
+            ad2_new = input("Please enter a new Address Line 2: ")
+            if ad2_new != account_details["Address_Line_2"]:
+                while True:
+                    final_confirmation = input("Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_2"] = ad2_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+            else:
+                print("This is already your current Address Line 2.")
+
+        else:
+            print("Invalid option")
+            continue
+
+        if updates_made:
+            registered_users["gp"][email_address]= account_details
+            with open("accounts.json","w") as file:
+                dump(registered_users , file ,indent=4)
+            print("Updating your account details...")
+            sleep(1)
+            print("Your changes have been saved successfully!")
+            sleep(1)
+            updates_made = False
+
+        else:
+            print("\nNo changes were made.\n")
+            sleep(1)
+
+        print("-"*80)
+        print("Updated account details:")
+        print("")
+        for key,value in account_details.items():
+            if key != "password" and key!= "journals" and key!= "conditions" and key!= "clinical_notes" :
+                print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
+
+        print("\n")
+        edit_again= input("Would you like to edit another detail? (Y/N): ").strip().lower()
+        if edit_again == "n":
+            print("\nReturning to your homepage...")
+            sleep(1)
+            admins_page()
+            break
+        elif edit_again!= "y":
+            print("Returning to the edit menu")
+
+# [ 2 ] Delete accounts or Activate/Deactivate
 def display_all_accounts():
     print("=" * 80)
     print("ALL ACCOUNTS".center(80))
@@ -322,9 +813,8 @@ def display_all_accounts():
         print("-" * 80)
         if accounts:
             for email, details in accounts.items():
-                print(f"[ {counter} ] Email: {email}, Name: {details['name']}, "
-                      f"Surname: {details['surname']}, Gender: {details['gender']}, "
-                      f"Password: {details['password']}")
+                print(f"""[ {counter} ] Email: {email}, Name: {details['name']}, Surname: {details['surname']}, Gender: {details['gender']},
+      Password: {details['password']}""")
                 account_mapping[counter] = (role, email)  # Map the number to role and email
                 counter += 1
         else:
@@ -369,319 +859,342 @@ def delete_accounts():
                 print("Account deletion cancelled.")
             else:
                 print("Invalid input. Please confirm with 'Y' or 'N'")
-def load_data():
-    try:
-        with open(DATA_FILE, "r") as file:
-            return load(file)
-    except FileNotFoundError:
-        return {"patient": {}, "gp": {}, "admin": {}}
-def save_data(data):
-    with open(DATA_FILE, "w") as file:
-        dump(data, file, indent=4)
-def manage_gp_details():
-    from time import sleep
-    # New JSon file, but it only contains new data, have to import all the other GPs from the other accounts.json file
-    data_file = "gp_data.json"
-    if os.path.exists(data_file):
-        with open(data_file, "r") as file:
-            gp_data = load(file)
+
+# [ 3 ] Change Patient Details
+def change_patient_details():
+    print("-" * 80)
+    print("All registered Patients".center(80))
+
+    print("\nEnter 'H' to return to homepage\n")
+
+    patient_accounts = registered_users["patient"]
+    if not patient_accounts:
+        print("No accounts available.")
+        return
+
+    account_mapping = {}
+    counter = 1
+
+    if patient_accounts:
+        for email, details in patient_accounts.items():
+            print(f"[ {counter} ] Name: {details['name']}, "
+                  f"Surname: {details['surname']}, Email: {email}, ")
+            account_mapping[counter] = email  # Map the number to role and email
+            counter += 1
     else:
-        gp_data = {
-            "gp1@gmail.com": {
-                "email": "gp1@gmail.com",
-                "password": "password1",
-                "name": "Unknown",
-                "surname": "Unknown",
-                "date_of_birth": "Unknown",
-                "gender": "Unknown",
-                "NHS_blood_donor": "Unknown",
-                "NHS_organ_donor": "Unknown",
-                "Address_Line_1": "Unknown",
-                "Address_Line_2": "Unknown",
-                "conditions": [],
-                "clinical_notes": "None",
-                "journals": []
-            }
-        }
+        print("No accounts")
 
-    def save_data2():
-        with open(data_file, "w") as file:
-            dump(gp_data, file, indent=4)
-    def display_all_gps():
-        if not gp_data:
-            print("No GPs found.")
-            return {}
-        print("List of GPs:\n")
-        for index, (email, details) in enumerate(gp_data.items(), start=1):
-            print(f"[{index}] Name: {details['name']} {details['surname']}, Email: {email}")
-        return {i + 1: (email, details) for i, (email, details) in enumerate(gp_data.items())}
-    # Function to update GP details
-    def update_gp_details(email_to_edit):
-        gp_details = gp_data[email_to_edit]
-        # Display the current GP details before editing
-        print("\nCurrent GP Details:")
-        print(f"[1] Email: {gp_details['email']}")
-        print(f"[2] Password: {gp_details['password']}")
-        print(f"[3] Name: {gp_details['name']}")
-        print(f"[4] Surname: {gp_details['surname']}")
-        print(f"[5] Date of Birth: {gp_details['date_of_birth']}")
-        print(f"[6] Gender: {gp_details['gender']}")
-        print(f"[7] NHS Blood Donor: {gp_details['NHS_blood_donor']}")
-        print(f"[8] NHS Organ Donor: {gp_details['NHS_organ_donor']}")
-        print(f"[9] Address Line 1: {gp_details['Address_Line_1']}")
-        print(f"[10] Address Line 2: {gp_details['Address_Line_2']}")
-        print("\nWhich detail would you like to edit?")
-        choice9 = input("Enter your choice: ").strip().upper()
-        if choice9 == "H":
-            print("Returning to the homepage...\n")
-            return
-        if choice9.isdigit() and 0 < int(choice) <= 10:
-            selected_field = list(gp_details.keys())[int(choice) - 1]
-            new_value = input(
-                f"Enter new {selected_field.replace('_', ' ')} (current: {gp_details[selected_field]}): ").strip()
-            if new_value != gp_details[selected_field]:
-                while True:
-                    confirm = input("Confirm change? (Y/N): ").strip().lower()
-                    if confirm == "y":
-                        gp_details[selected_field] = new_value
-                        save_data2()  # Save the updated data to the file
-                        print(f"{selected_field.replace('_', ' ').title()} updated successfully!")
-                        break
-                    elif confirm == "n":
-                        print(f"Change to {selected_field.replace('_', ' ')} discarded.")
-                        break
-                    else:
-                        print("Please input Y or N.")
-        else:
-            print("Invalid option. Returning to the homepage...\n")
-            return
-        print("\nUpdated GP Details:")
-        for key, value in gp_details.items():
-            print(f"{key.replace('_', ' ').title()}: {value}")
-        save_data2()  # Save the updated data to the file
-        print("\nChanges saved successfully!")
-    # Function to display options and allow selection of a GP to edit
     while True:
-        print("\n[1] Display and Edit GP Details")
-        print("[X] Return to Admin Homepage")
-        option = input("Enter your choice: ").strip().upper()
-        if option == "1":
-            account_mapping = display_all_gps()
-            if account_mapping:
-                try:
-                    choice = int(input("Enter the number of the GP to edit: ").strip())
-                    email_to_edit = account_mapping[choice][0]
-                    update_gp_details(email_to_edit)
-                except (ValueError, KeyError):
-                    print("Invalid option. Please try again.")
-        elif option.upper() == "X":
-            print("Returning to the Admin Homepage...\n")
-            break
+        email_choice = input("Enter the number of the account to change details: ").strip()
+        if email_choice.upper() == "H":
+            admins_page()
+            return
+
+        account_numbers = int(email_choice)
+
+        if account_numbers not in account_mapping:
+            print(f"Invalid numbers found: {account_numbers}")
+            continue
         else:
-            print("Invalid option. Please try again.")
-    # Redirect to Admin Homepage
-    admins_page()
-def manage_gp_system():
-    # Register a new GP
-    def register_gp():
-        """Function to register a new General Practitioner (GP)."""
-        print("\nRegister a new GP:")
-        email = input("Email: ").strip()
-        password = input("Password: ").strip()
-        name = input("First Name: ").strip()
-        surname = input("Surname: ").strip()
-        date_of_birth = input("Date of Birth (DD/MM/YYYY): ").strip()
-        gender = input("Gender: ").strip()
-        NHS_blood_donor = input("NHS Blood Donor (Yes/No): ").strip()
-        NHS_organ_donor = input("NHS Organ Donor (Yes/No): ").strip()
-        address_line_1 = input("Address Line 1: ").strip()
-        address_line_2 = input("Address Line 2: ").strip()
-        data = load_data()
-        if email in data["gp"]:
-            print(f"\nError: GP with email {email} already exists.")
-            return
-        # Create a new GP entry
-        data["gp"][email] = {
-            "email": email,
-            "password": password,
-            "name": name,
-            "surname": surname,
-            "date_of_birth": date_of_birth,
-            "gender": gender,
-            "NHS_blood_donor": NHS_blood_donor,
-            "NHS_organ_donor": NHS_organ_donor,
-            "Address_Line_1": address_line_1,
-            "Address_Line_2": address_line_2,
-            "conditions": [],
-            "clinical_notes": "None",
-            "journals": []
-        }
-        save_data(data)
-        print(f"\n{name} {surname} has been successfully registered as a GP.")
-    # Display all GPs
-    def display_gps():
-        """Display all registered GPs."""
-        data = load_data()
-        gps = data.get("gp", {})
-        if not gps:
-            print("\nNo GPs registered yet.")
-            return
-        print("\nRegistered GPs:")
-        for i, (email, details) in enumerate(gps.items(), start=1):
-            print(f"{i}. {details['name']} {details['surname']} ({email})")
-    # Main program loop
+            email_to_view = account_mapping[account_numbers]
+
+    email_address = email_to_view
+    account_details = registered_users["patient"][email_to_view]
+    updates_made = False
+
     while True:
-        print("\n[1] Register a new GP")
-        print("[2] View all GPs")
-        print("[X] Return To Admin Homepage")
-        choice = input("Enter your choice: ").strip()
-        if choice == '1':
-            register_gp()
-        elif choice == '2':
-            display_gps()
-        elif choice.upper() == 'X':
-            admins_page()  # Calls the admin homepage when 'X' is pressed
-        else:
-            print("Invalid choice. Please try again.")
-def manage_accounts():
-    if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as file:
-            accounts_data = load(file)
-    else:
-        accounts_data = {
-            "patient": {
-                "mnedjadi2003@gmail.com": {
-                    "email": "mnedjadi2003@gmail.com",
-                    "password": "Yamina20",
-                    "name": "mohamed",
-                    "surname": "nedjadi",
-                    "date_of_birth": "05/11/2003",
-                    "gender": "Male",
-                    "NHS_blood_donor": "IS Blood donor",
-                    "NHS_organ_donor": "IS Organ donor",
-                    "Address_Line_1": "401 Jutsum",
-                    "Address_Line_2": "London",
-                    "journals": [
-                        {
-                            "date": "2024-11-24 15:47:03",
-                            "entry": "cwdhcfwefhciwehfwef\nwefuiweifherwighfer\newfuiwehfopwehfwe["
-                        }
-                    ],
-                    "conditions": [],
-                    "clinical_notes": "None"
-                },
-                "tangid.mhm03@outlook.com": {
-                    "email": "tangid.mhm03@outlook.com",
-                    "password": "Excalibur5",
-                    "name": "Tangid",
-                    "surname": "Mohammad",
-                    "date_of_birth": "16/09/2003",
-                    "gender": "Male",
-                    "NHS_blood_donor": "IS Blood donor",
-                    "NHS_organ_donor": "NOT Organ donor",
-                    "Address_Line_1": "86 Victoria Road",
-                    "Address_Line_2": "London",
-                    "journals": [
-                        {
-                            "date": "2024-11-24 16:49:05",
-                            "entry": "Hello, my name is Tangid\nI want to go home\n\n\nBye"
-                        }
-                    ],
-                    "conditions": [],
-                    "clinical_notes": "None"
-                }
-            },
-            "gp": {},
-            "admin": {}
-        }
-    def update_account_page(email_address):
-        patient_data = accounts_data.get("patient", {})
-        account_details = patient_data.get(email_address)
-
-        if not account_details:
-            print("No patient found with the provided email address.")
-            return
-
-        while True:
-            print("=" * 80)
-            print("Account Details:\n".center(80))
-            counter = 1
-            keys = list(account_details.keys())
-            for key, value in account_details.items():
-                print(f"[{counter}] {key[0].upper() + key[1:].replace('_', ' ')}: {value}")
+        print("=" * 80)
+        print("Account Details:\n".center(80))
+        counter = 1
+        for key, value in account_details.items():
+            if key != "password" and key != "journals" and key != "conditions" and key != "clinical_notes":
+                print("[", counter, "] ", (key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
                 counter += 1
-            print("\n[ H ]  Return to Patient Selection\n")
+        print("\n[ H ]  Go to Homepage")
 
-            update_option = input("Please select an option to edit: ").strip()
+        update_option = input("\nPlease select an option to edit: ").strip()
 
-            if update_option.upper() == "H":
-                print("Returning to patient selection...\n")
-                sleep(1)
-                break
+        if update_option.upper() == "H":
+            print("Returning to your homepage\n")
+            admins_page()
+            break
 
-            if update_option.isdigit() and 0 < int(update_option) <= counter:
-                selected_key = keys[int(update_option) - 1]
-                new_value = input(f"Enter new value for {selected_key}: ").strip()
-                if new_value != account_details[selected_key]:
-                    while True:
-                        confirm = input("Confirm change? (Y/N): ").strip().lower()
-                        if confirm == "y":
-                            account_details[selected_key] = new_value
-                            accounts_data["patient"][email_address] = account_details
-                            save_data(accounts_data)  # Save changes after every update
-                            print("Changes saved successfully!")
-                            break
-                        elif confirm == "n":
-                            print("Change discarded.")
+        if update_option.isdigit() and 0 <= int(update_option) <= 9:
+            update_option = int(update_option)
+        else:
+            print("\n")
+            print("Invalid input. Please choose a valid option")
+            continue
+
+        if update_option == 1:
+            while True:
+                new_email = input("Please enter your new email address: ").strip()
+                email_pattern = r"^[\w\.-]+@[\w\.-]+\.[\w\.-]+$"
+
+                if new_email.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+
+                if new_email == email_address:
+                    print("This is already your current email. ")
+                    break
+
+                if new_email in registered_users["patient"] and new_email != email_address:
+                    print("This is already your current email. No changes made. ")
+                    break
+
+
+                elif match(email_pattern, new_email):
+
+                    reset_code = str(randint(100000, 999999))
+                    print(
+                        f"To verify the new email address, a verification code will be sent to the email. Simulated reset code {new_email}: {reset_code}")
+
+                    for attempt in range(4):
+                        user_code = input("Enter the reset code sent to your email: ")
+                        if user_code == reset_code:
                             break
                         else:
-                            print("Please input Y or N.")
+                            print("Incorrect code. Please try again")
+                            if attempt == 3:
+                                print(
+                                    "Too many incorrect attempts. No change has been made to your account. Returning to your homepage...\n")
+                                sleep(2)
+                                admins_page()
+                                return
+
+                    account_details["email"] = new_email
+                    del registered_users["patient"][email_address]
+                    registered_users["patient"][new_email] = account_details
+                    email_address = new_email
+                    updates_made = True
+                    break
+                else:
+                    print("Invalid email format. Please enter a valid email.")
+
+        elif update_option == 2:
+            new_first_name = input("Please enter your new first name: ").strip()
+            if new_first_name != account_details["name"]:
+                while True:
+                    final_confirmation = input(
+                        "Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["name"] = new_first_name
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+
             else:
-                print("\nInvalid input. Please choose a valid option.")
+                print("This is already your current first name.")
 
 
 
-    while True:
-        print("\nOptions Menu:")
-        print("[1] Display and Edit Patients")
-        print("[X] Exit")
+        elif update_option == 3:
+            new_surname = input("Please enter your new surname: ").strip()
+            if new_surname != account_details["surname"]:
+                while True:
+                    final_confirmation = input(
+                        "Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["surname"] = new_surname
+                        updates_made = True
+                        break
 
-        choice = input("Enter your choice: ").strip()
+                    elif final_confirmation == "n":
+                        break
 
-        if choice == "1":
-            patient_data = accounts_data.get("patient", {})
 
-            if not patient_data:
-                print("No patients found.")
-                continue
+                    else:
+                        print("Please input a valid option, either Y or N ")
 
-            print("List of Patients:\n")
-            for index, (email, details) in enumerate(patient_data.items(), start=1):
-                print(f"[{index}] Name: {details['name']} {details['surname']}, Email: {email}")
+            else:
+                print("This is already your current surname")
+
+
+        elif update_option == 4:
+            while True:
+                new_birthday = input("Birth date (DD/MM/YYYY): ").strip()
+
+                if new_birthday.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+
+                if new_birthday != account_details["date_of_birth"]:
+                    try:
+                        day, month, year = map(int, new_birthday.split("/"))
+                        datetime(year, month, day)
+                        account_details["date_of_birth"] = new_birthday
+                        updates_made = True
+                        break
+                    except ValueError:
+                        print("Invalid birth date. Please enter in the format DD/MM/YYYY.")
+                else:
+                    print("This is already your current date of birth.")
+                    break
+
+
+        elif update_option == 5:
+            while True:
+                print("Genders:")
+                print("[ 1 ] Male")
+                print("[ 2 ] Female")
+
+                new_gender_option = input("Please choose an option: ").strip()
+                if new_gender_option == "1":
+                    new_gender = "Male"
+                elif new_gender_option == "2":
+                    new_gender = "Female"
+                elif new_gender_option.upper() == "H":
+                    print("Returning to your homepage\n")
+                    admins_page()
+                    break
+                else:
+                    print("Please choose a valid option '1' or '2' ")
+
+                if new_gender != account_details["gender"]:
+                    account_details["gender"] = new_gender
+                    updates_made = True
+                    break
+                else:
+                    print("Please choose a valid option '1' or '2' ")
+                    break
+
+        elif update_option == 6:
+            while True:
+                print("NHS blood donor: ")
+                print("[ 1 ] Yes")
+                print("[ 2 } No")
+                donor_new = input("Please choose an option: ").strip()
+                if donor_new == "1":
+                    donor_new = "IS Blood donor"
+                elif donor_new == "2":
+                    donor_new = "NOT Blood donor"
+                elif donor_new.upper() == "E":
+                    break
+                else:
+                    print("Invalid choice, Please choose 1 or 2")
+                    continue
+
+                if donor_new != account_details["NHS_blood_donor"]:
+                    account_details["NHS_blood_donor"] = donor_new
+                    updates_made = True
+                    break
+                else:
+                    print("This is already your current NHS blood donor status")
+                    break
+
+
+        elif update_option == 7:
 
             while True:
-                try:
-                    selection = input(
-                        "\nEnter the number of the patient to edit (or 'H' to return to main menu): ").strip()
-                    if selection.upper() == "H":
-                        print("Returning to main menu...\n")
-                        break
-                    patient_index = int(selection)
-                    if 1 <= patient_index <= len(patient_data):
-                        selected_email = list(patient_data.keys())[patient_index - 1]
-                        update_account_page(selected_email)
-                        break
-                    else:
-                        print("Invalid selection. Please choose a valid number.")
-                except ValueError:
-                    print("Invalid input. Please enter a number or 'H'.")
-        elif choice.upper() == "X":
-            print("Exiting the programme")
-            break
-        else:
-            print("Invalid choice. Please try again.")
-def display_summary_info_system():
+                print("NHS organ donor:")
+                print("[ 1 ] Yes")
+                print("[ 2 } No")
+                organ_new = input("Please choose an option: ").strip()
+                if organ_new == "1":
+                    organ_new = "IS Organ donor"
+                elif organ_new == "2":
+                    organ_new = "NOT Organ donor"
+                elif organ_new.upper() == "E":
+                    break
+                else:
+                    print("Invalid choice. Please choose 1 or 2")
+                    continue
 
+                if organ_new != account_details["NHS_organ_donor"]:
+                    account_details["NHS_organ_donor"] = organ_new
+                    updates_made = True
+                    break
+                else:
+                    print("This is already your current NHS organ donor status")
+                    break
+
+
+        elif update_option == 8:
+
+            ad1_new = input("Please enter a new Address Line 1: ")
+            if ad1_new != account_details["Address_Line_1"]:
+                while True:
+                    final_confirmation = input(
+                        "Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_1"] = ad1_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+
+            else:
+                print("This is already your current Address Line 2.")
+
+
+        elif update_option == 9:
+            ad2_new = input("Please enter a new Address Line 2: ")
+            if ad2_new != account_details["Address_Line_2"]:
+                while True:
+                    final_confirmation = input(
+                        "Please confirm you would like to make this change to your account (Y/N): ").strip().lower()
+                    if final_confirmation == "y":
+                        account_details["Address_Line_2"] = ad2_new
+                        updates_made = True
+                        break
+
+                    elif final_confirmation == "n":
+                        break
+
+                    else:
+                        print("Please input a valid option, either Y or N. ")
+            else:
+                print("This is already your current Address Line 2.")
+
+        else:
+            print("Invalid option")
+            continue
+
+        if updates_made:
+            registered_users["patient"][email_address] = account_details
+            with open("accounts.json", "w") as file:
+                dump(registered_users, file, indent=4)
+            print("Updating your account details...")
+            sleep(1)
+            print("Your changes have been saved successfully!")
+            sleep(1)
+            updates_made = False
+
+        else:
+            print("\nNo changes were made.\n")
+            sleep(1)
+
+        print("-" * 80)
+        print("Updated account details:")
+        print("")
+        for key, value in account_details.items():
+            if key != "password" and key != "journals" and key != "conditions" and key != "clinical_notes":
+                print((key[0].upper()) + key[1:len(key)].replace("_", " "), ": ", value)
+
+        print("\n")
+        edit_again = input("Would you like to edit another detail? (Y/N): ").strip().lower()
+        if edit_again == "n":
+            print("\nReturning to your homepage...")
+            sleep(1)
+            admins_page()
+            break
+        elif edit_again != "y":
+            print("Returning to the edit menu")
+
+# [ 4 ] Display User Details  --- # THIS FUNCTION DOESNT WORK -- NEED TO DEBUG OR JUST DO AGAIN
+def display_summary_info_system():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as file:
             json_data = json.load(file)
@@ -812,12 +1325,11 @@ def display_summary_info_system():
 
         print("\nPress Enter to return to 'List of Users'.")
         input()
-        list_users()
+        list_users()    # THIS FUNCTION DOESNT WORK -- NEED TO DEBUG OR JUST DO AGAIN
 #==========================================================
 
 
 #====================Patient Homepage======================
-
 #[ 1 ] Book and manage appointments
 def book_and_manage_appointments(email_address):
     print("[ 1 ] View upcoming appointments")
@@ -2482,11 +2994,10 @@ def admins_page():
     print("ADMIN HOMEPAGE".center(80))
     print(termcolor.colored("Welcome, Admin. Managing the platform for better mental health!".center(80), "green"))
     print("-" * 80)
-    print("[ 1 ] Add New MHWP")
-    print("[ 2 ] Activate/Deactivate or Delete accounts ")
-    print("[ 3 ] Change GP Details ")
-    print("[ 4 ] Change Patient Details ")
-    print("[ 5 ] Display User Details")
+    print("[ 1 ] GP Management System ")
+    print("[ 2 ] Delete or Activate/Deactivate accounts ")
+    print("[ 3 ] Change Patient Details ")
+    print("[ 4 ] Display User Details")
     print("[ X ] Logout")
 
     while True:
@@ -2501,12 +3012,9 @@ def admins_page():
             delete_accounts()
 
         elif choice == "3":
-            manage_gp_details()
+            change_patient_details()
 
         elif choice == "4":
-            manage_accounts()
-
-        elif choice == "5":
             display_summary_info_system()
 
         else:
@@ -2750,7 +3258,7 @@ class Accounts:
         self.surname = surname
         self.date_of_birth = date_of_birth
         self.gender = gender
-        self.job_role = job_role
+        self.job_role = job_role if job_role else "gp"
         self.NHS_blood_donor = nhs_blood_donor or "Unknown"
         self.NHS_organ_donor = nhs_organ_donor or "Unknown"
         self.Address_Line_1 = address_line_1
@@ -2777,14 +3285,13 @@ class Accounts:
             "clinical_notes": "None"
         }
 
-        # Add to the appropriate role in registered_users
         if self.job_role in registered_users:
             registered_users[self.job_role][self.email] = user_details
         else:
             # If the role does not exist, create it
-            registered_users[self.job_role] = {self.email: user_details}
+            # registered_users[self.job_role] = {self.email: user_details}
+            print("Role does not exist")
 
-        # Save the updated registered_users dictionary to the JSON file
         save_accounts(registered_users)
 #==========================================================
 
