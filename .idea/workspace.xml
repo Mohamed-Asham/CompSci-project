@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="68561d2d-3b81-4cd5-818f-be931059c91a" name="Changes" comment="">
+    <list default="true" id="68561d2d-3b81-4cd5-818f-be931059c91a" name="Changes" comment="FIxed some of the admin codes&#10;BOOKING display still needs rework.&#10;Changed the order of some of the admin functions for more intuitive appearance">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -15,22 +15,22 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo"><![CDATA[{
-  "customColor": "",
-  "associatedIndex": 2
-}]]></component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 2
+}</component>
   <component name="ProjectId" id="2phJlHmMboYgHACrcVhSQPGJIv0" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.COMBINED CODE.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "main"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.COMBINED CODE.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -47,6 +47,19 @@
       <option name="presentableId" value="Default" />
       <updated>1733212525729</updated>
     </task>
+    <task id="LOCAL-00001" summary="FIxed some of the admin codes&#10;BOOKING display still needs rework.&#10;Changed the order of some of the admin functions for more intuitive appearance">
+      <option name="closed" value="true" />
+      <created>1733231265165</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1733231265165</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="FIxed some of the admin codes&#10;BOOKING display still needs rework.&#10;Changed the order of some of the admin functions for more intuitive appearance" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIxed some of the admin codes&#10;BOOKING display still needs rework.&#10;Changed the order of some of the admin functions for more intuitive appearance" />
   </component>
 </project>
