@@ -542,11 +542,14 @@ def change_gp_details():
         print("No accounts")
 
     while True:
-        email_choice = input("\nEnter the number of the account to change details: ").strip()
-        if email_choice.upper() == "H":
-            admins_page()
-            return
-
+        while True:
+            email_choice = input("\nEnter the number of the account to change details: ").strip()
+            if email_choice.upper() == "H":
+                admins_page()
+            elif not email_choice.isdigit():
+                print("Invalid input, please select an account number or H ")
+            else:
+                break
         account_numbers = int(email_choice)
 
         if account_numbers not in account_mapping:
@@ -795,72 +798,7 @@ def change_gp_details():
         elif edit_again!= "y":
             print("Returning to the edit menu")
 
-# [ 2 ] Delete accounts or Activate/Deactivate
-def display_all_accounts():
-    print("=" * 80)
-    print("ALL ACCOUNTS".center(80))
-    print("\nEnter 'H' to return to the homepage")
-
-    if not registered_users:
-        print("No accounts available.")
-        return
-
-    account_mapping = {}
-    counter = 1
-
-    for role, accounts in registered_users.items():
-        print(f"\nRole: {role.capitalize()}")
-        print("-" * 80)
-        if accounts:
-            for email, details in accounts.items():
-                print(f"""[ {counter} ] Email: {email}, Name: {details['name']}, Surname: {details['surname']}, Gender: {details['gender']},
-      Password: {details['password']}""")
-                account_mapping[counter] = (role, email)  # Map the number to role and email
-                counter += 1
-        else:
-            print("No accounts in this role.")
-    print(f"\n{"=" * 80}")
-
-    return account_mapping
-def delete_accounts():
-    account_mapping = display_all_accounts()
-    print("\nEnter 'H' to return to the homepage\n")
-
-    while True:
-        choice = input("Enter the number of the account to delete: ").strip()
-        if choice.upper() == "H":
-            admins_page()
-            return
-
-        try:
-            account_numbers = [int(num.strip()) for num in choice.split(",")]
-        except ValueError:
-            print("Invalid input. Please enter numbers corresponding to accounts, separated by commas.")
-            continue
-
-        invalid_numbers = [num for num in account_numbers if num not in account_mapping]
-        if invalid_numbers:
-            print(f"Invalid numbers found: {', '.join(map(str, invalid_numbers))}")
-            continue
-
-        # Process valid account numbers
-        for numbers in account_numbers:
-            role, email_to_delete = account_mapping[numbers]
-            confirming_option = input(
-                f"Confirm deletion of account [ {numbers} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
-            if confirming_option == "Y":
-                del registered_users[role][email_to_delete]
-                save_accounts(registered_users, mode="override")
-                print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
-                sleep(2)
-                print("\nUpdated Accounts:")
-                display_all_accounts()
-            elif confirming_option == "N":
-                print("Account deletion cancelled.")
-            else:
-                print("Invalid input. Please confirm with 'Y' or 'N'")
-
-# [ 3 ] Change Patient Details
+# [ 2 ] Change Patient Details
 def change_patient_details():
     print("-" * 80)
     print("All registered Patients".center(80))
@@ -885,11 +823,14 @@ def change_patient_details():
         print("No accounts")
 
     while True:
-        email_choice = input("Enter the number of the account to change details: ").strip()
-        if email_choice.upper() == "H":
-            admins_page()
-            return
-
+        while True:
+            email_choice = input("\nEnter the number of the account to change details: ").strip()
+            if email_choice.upper() == "H":
+                admins_page()
+            elif not email_choice.isdigit():
+                print("Invalid input, please select an account number or H ")
+            else:
+                break
         account_numbers = int(email_choice)
 
         if account_numbers not in account_mapping:
@@ -897,7 +838,7 @@ def change_patient_details():
             continue
         else:
             email_to_view = account_mapping[account_numbers]
-
+            break
     email_address = email_to_view
     account_details = registered_users["patient"][email_to_view]
     updates_made = False
@@ -1193,11 +1134,76 @@ def change_patient_details():
         elif edit_again != "y":
             print("Returning to the edit menu")
 
+# [ 3 ] Delete accounts or Activate/Deactivate
+def display_all_accounts():
+    print("=" * 80)
+    print("ALL ACCOUNTS".center(80))
+    print("\nEnter 'H' to return to the homepage")
+
+    if not registered_users:
+        print("No accounts available.")
+        return
+
+    account_mapping = {}
+    counter = 1
+
+    for role, accounts in registered_users.items():
+        print(f"\nRole: {role.capitalize()}")
+        print("-" * 80)
+        if accounts:
+            for email, details in accounts.items():
+                print(f"""[ {counter} ] Email: {email}, Name: {details['name']}, Surname: {details['surname']}, Gender: {details['gender']},
+      Password: {details['password']}""")
+                account_mapping[counter] = (role, email)  # Map the number to role and email
+                counter += 1
+        else:
+            print("No accounts in this role.")
+    print(f"\n{"=" * 80}")
+
+    return account_mapping
+def delete_accounts():
+    account_mapping = display_all_accounts()
+    print("\nEnter 'H' to return to the homepage\n")
+
+    while True:
+        choice = input("Enter the number of the account to delete: ").strip()
+        if choice.upper() == "H":
+            admins_page()
+            return
+
+        try:
+            account_numbers = [int(num.strip()) for num in choice.split(",")]
+        except ValueError:
+            print("Invalid input. Please enter numbers corresponding to accounts, separated by commas.")
+            continue
+
+        invalid_numbers = [num for num in account_numbers if num not in account_mapping]
+        if invalid_numbers:
+            print(f"Invalid numbers found: {', '.join(map(str, invalid_numbers))}")
+            continue
+
+        # Process valid account numbers
+        for numbers in account_numbers:
+            role, email_to_delete = account_mapping[numbers]
+            confirming_option = input(
+                f"Confirm deletion of account [ {numbers} ] [ {email_to_delete} ] (Y/N): ").strip().upper()
+            if confirming_option == "Y":
+                del registered_users[role][email_to_delete]
+                save_accounts(registered_users, mode="override")
+                print(f"\nAccount with email '{email_to_delete}' has been successfully deleted.")
+                sleep(2)
+                print("\nUpdated Accounts:")
+                display_all_accounts()
+            elif confirming_option == "N":
+                print("Account deletion cancelled.")
+            else:
+                print("Invalid input. Please confirm with 'Y' or 'N'")
+
 # [ 4 ] Display User Details  --- # THIS FUNCTION DOESNT WORK -- NEED TO DEBUG OR JUST DO AGAIN
 def display_summary_info_system():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as file:
-            json_data = json.load(file)
+            json_data = load(file)
     else:
         json_data = {
         "patient": {
@@ -1275,7 +1281,6 @@ def display_summary_info_system():
     }
 
     def list_users():
-        """Display all users and allow the user to select one to view details."""
         while True:
             print("\nList of Users:")
             user_list = list(users.items())
@@ -1286,30 +1291,47 @@ def display_summary_info_system():
 
             # Select a user
             while True:
-                choice = input("\nSelect a user to view details (or X to return to Admin Homepage): ")
-                if choice.upper() == 'X':
+                choiceP = input("\nSelect a user to view details (or X to return to Admin Homepage): ")
+                if choiceP.upper() == 'X':
                     print("Returning to Admin Homepage...")
                     admins_page()
-                elif 1 <= choice <= len(user_list):
-                    email, data = user_list[choice - 1]
+                elif choiceP.isdigit() and 1 <= int(choiceP) <= len(user_list):
+                    email, data = user_list[int(choiceP) - 1]
                     view_user_details(email, data)
                     break
                 else:
                     print("Invalid choice. Please choose a valid option '1' or 'X'.")
 
     def view_user_details(email, data):
-        """View detailed information about the selected user."""
+        # full_name = f"{data['name']} {data['surname']}"
+        # user_type = "Patient" if email in json_data["patient"] else "MHWP"
+        # print(f"\nDetails for {full_name}:")
+        # print(f"Email: {email}")
+        # print(f"Password: {data["password"]}")
+        # print(f"Date of Birth: {data['date_of_birth']}")
+        # print(f"Gender: {data['gender']}")
+        # print(f"NHS Blood Donor: {data['NHS_blood_donor']}")
+        # print(f"NHS Organ Donor: {data['NHS_organ_donor']}")
+        # print(f"Address: {data['Address_Line_1']}, {data['Address_Line_2']}")
+        # print(f"User Type: {user_type}")
         full_name = f"{data['name']} {data['surname']}"
         user_type = "Patient" if email in json_data["patient"] else "MHWP"
-        print(f"\nDetails for {full_name}:")
-        print(f"Email: {email}")
-        print(f"Date of Birth: {data['date_of_birth']}")
-        print(f"Gender: {data['gender']}")
-        print(f"NHS Blood Donor: {data['NHS_blood_donor']}")
-        print(f"NHS Organ Donor: {data['NHS_organ_donor']}")
-        print(f"Address: {data['Address_Line_1']}, {data['Address_Line_2']}")
-        print(f"User Type: {user_type}")
 
+        # Create a list of rows for tabulation
+        table_data = [
+            ["Full Name", full_name],
+            ["Email", email],
+            ["Password", data["password"]],
+            ["Date of Birth", data["date_of_birth"]],
+            ["Gender", data["gender"]],
+            ["NHS Blood Donor", data["NHS_blood_donor"]],
+            ["NHS Organ Donor", data["NHS_organ_donor"]],
+            ["Address", f"{data['Address_Line_1']}, {data['Address_Line_2']}"],
+            ["User Type", user_type]
+        ]
+
+        # Print the tabulated output without headers
+        print(tabulate.tabulate(table_data, tablefmt="grid"))
         if user_type == "Patient":
             # List appointments for the patient
             patient_bookings = [b for b in bookings if b["patient"].lower() == full_name.lower()]
@@ -1325,7 +1347,8 @@ def display_summary_info_system():
 
         print("\nPress Enter to return to 'List of Users'.")
         input()
-        list_users()    # THIS FUNCTION DOESNT WORK -- NEED TO DEBUG OR JUST DO AGAIN
+        list_users()
+    list_users()
 #==========================================================
 
 
@@ -2972,7 +2995,7 @@ def gp_page(gp_email):
     print("[ X ] Logout")
 
     while True:
-        choice1 = input("\nPlease select and option: ").strip()
+        choice1 = input("\nPlease select an option: ").strip()
         if choice1.upper() == "X":
             login_menu()
         elif choice1 == "1":
@@ -2995,8 +3018,8 @@ def admins_page():
     print(termcolor.colored("Welcome, Admin. Managing the platform for better mental health!".center(80), "green"))
     print("-" * 80)
     print("[ 1 ] GP Management System ")
-    print("[ 2 ] Delete or Activate/Deactivate accounts ")
-    print("[ 3 ] Change Patient Details ")
+    print("[ 2 ] Change Patient Details ")
+    print("[ 3 ] Delete or Activate/Deactivate accounts ")
     print("[ 4 ] Display User Details")
     print("[ X ] Logout")
 
@@ -3009,10 +3032,10 @@ def admins_page():
             manage_gp_system()
 
         elif choice == "2":
-            delete_accounts()
+            change_patient_details()
 
         elif choice == "3":
-            change_patient_details()
+            delete_accounts()
 
         elif choice == "4":
             display_summary_info_system()

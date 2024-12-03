@@ -4,7 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="dcd0a7e6-cea6-445c-aafa-042800d0f57a" name="Changes" comment="" />
+    <list default="true" id="68561d2d-3b81-4cd5-818f-be931059c91a" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -13,10 +15,11 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 2
-}</component>
-  <component name="ProjectId" id="2pfj6CgUGmA6ZYXAgaTGj1ZNtiS" />
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 2
+}]]></component>
+  <component name="ProjectId" id="2phJlHmMboYgHACrcVhSQPGJIv0" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -24,31 +27,10 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Python.COMBINED CODE.executor": "Run",
-<<<<<<< HEAD
-    "Python.Calendar.executor": "Run",
-    "Python.Combined Asham X Mohamed.executor": "Run",
-    "Python.Compsci project.executor": "Run",
-<<<<<<< Updated upstream
-    "Python.Moaz - updated code.executor": "Run",
-    "Python.Mohamed N - patient stuff.executor": "Run",
-    "Python.Simley face.executor": "Run",
-=======
-    "Python.Testing colour code - Mohamed.executor": "Run",
->>>>>>> Stashed changes
-    "Python.mental_health_resources.executor": "Run",
-    "Python.myproject.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "<unknown>",
-    "last_opened_file_path": "C:/Users/sanji/OneDrive/Documents/GitHub/CompSci-project",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)"
-=======
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main"
->>>>>>> 6da703d9f40d445adf908e18b9af7ea13c01c25b
   }
-}</component>
+}]]></component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -59,51 +41,12 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="dcd0a7e6-cea6-445c-aafa-042800d0f57a" name="Changes" comment="" />
-      <created>1733163850285</created>
+      <changelist id="68561d2d-3b81-4cd5-818f-be931059c91a" name="Changes" comment="" />
+      <created>1733212525729</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1733163850285</updated>
+      <updated>1733212525729</updated>
     </task>
     <servers />
   </component>
-<<<<<<< HEAD
-  <component name="TypeScriptGeneratedFilesManager">
-    <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.History.Properties">
-    <option name="COLUMN_ID_ORDER">
-      <list>
-        <option value="Default.Root" />
-        <option value="Default.Author" />
-        <option value="Default.Date" />
-        <option value="Default.Subject" />
-      </list>
-    </option>
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
-  </component>
-  <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/CompSci_project$Simley_face.coverage" NAME="Simley face Coverage Results" MODIFIED="1733161197619" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CompSci_project$Compsci_project.coverage" NAME="Compsci project Coverage Results" MODIFIED="1732634858746" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-<<<<<<< Updated upstream
-    <SUITE FILE_PATH="coverage/CompSci_project$Mohamed_N___patient_stuff.coverage" NAME="Mohamed N - patient stuff Coverage Results" MODIFIED="1733162156246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CompSci_project$COMBINED_CODE.coverage" NAME="COMBINED CODE Coverage Results" MODIFIED="1732635285208" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-=======
-    <SUITE FILE_PATH="coverage/CompSci_project$Mohamed_N___patient_stuff.coverage" NAME="Mohamed N - patient stuff Coverage Results" MODIFIED="1732633734617" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CompSci_project$Testing_colour_code___Mohamed.coverage" NAME="Testing colour code - Mohamed Coverage Results" MODIFIED="1732642588437" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
-    <SUITE FILE_PATH="coverage/CompSci_project$COMBINED_CODE.coverage" NAME="COMBINED CODE Coverage Results" MODIFIED="1732644385548" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
->>>>>>> Stashed changes
-  </component>
-=======
->>>>>>> 6da703d9f40d445adf908e18b9af7ea13c01c25b
 </project>
